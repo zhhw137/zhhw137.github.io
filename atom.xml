@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>风之之的Blog</title>
+  
+  <subtitle>好想在哪见过你~</subtitle>
+  <link href="https://fongzhizhi.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://fongzhizhi.github.io/"/>
+  <updated>2020-08-23T08:47:12.184Z</updated>
+  <id>https://fongzhizhi.github.io/</id>
+  
+  <author>
+    <name>Dongoog</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>git常用指令总结</title>
+    <link href="https://fongzhizhi.github.io/2020/08/23/git%E6%8C%87%E4%BB%A4/"/>
+    <id>https://fongzhizhi.github.io/2020/08/23/git%E6%8C%87%E4%BB%A4/</id>
+    <published>2020-08-23T08:31:48.786Z</published>
+    <updated>2020-08-23T08:47:12.184Z</updated>
+    
+    <content type="html"><![CDATA[<p><img src="/images/git.png" alt="git"></p><p>在这里记录一些常用的<code>git</code>指令，以及使用时碰到的一些问题及相应的解决办法。</p><a id="more"></a><h2 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git init</span><br><span class="line">git init [local repository]</span><br></pre></td></tr></table></figure><h2 id="克隆到本地"><a href="#克隆到本地" class="headerlink" title="克隆到本地"></a>克隆到本地</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone &lt;url&gt;</span><br></pre></td></tr></table></figure><h2 id="添加变化至暂存区-index"><a href="#添加变化至暂存区-index" class="headerlink" title="添加变化至暂存区(index)"></a>添加变化至暂存区(index)</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git add &lt;filename&gt;</span><br><span class="line">git add *</span><br><span class="line">git commit -m &quot;&lt;commit message&gt;&quot;</span><br></pre></td></tr></table></figure><h2 id="推送"><a href="#推送" class="headerlink" title="推送"></a>推送</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> 推送到指定的远程分支</span></span><br><span class="line">git push oringin &lt;master&gt;</span><br><span class="line"><span class="meta">#</span><span class="bash"> 绑定远程分支并推送</span></span><br><span class="line">git romete add origin &lt;master&gt;</span><br><span class="line">git push</span><br></pre></td></tr></table></figure><h2 id="分支-branch-相关"><a href="#分支-branch-相关" class="headerlink" title="分支(branch)相关"></a>分支(branch)相关</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">git branch # 查看本地分支</span><br><span class="line">git branch -r # 查看远程分支</span><br><span class="line">git branch -a # 查看所有分支</span><br><span class="line"></span><br><span class="line">git checkout -b &lt;dev&gt; # 创建本地分支</span><br><span class="line">git checkout &lt;dev&gt; # 切换到本地分支（没有会根据远程分支创建本地分支）</span><br><span class="line"></span><br><span class="line">git branch -d &lt;dev&gt; # 删除本地分支</span><br><span class="line">git push origin -d &lt;remote_dev&gt; # 删除远程分支</span><br><span class="line"></span><br><span class="line">git push origin &lt;dev&gt; # 推送到远程分支，没有会自动创建</span><br><span class="line"></span><br><span class="line">git checkout [branch name] # 切换分支</span><br></pre></td></tr></table></figure><h2 id="拉取"><a href="#拉取" class="headerlink" title="拉取"></a>拉取</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git pull</span><br><span class="line">git fetch [origin]</span><br></pre></td></tr></table></figure><h2 id="缓存-stash-相关"><a href="#缓存-stash-相关" class="headerlink" title="缓存(stash)相关"></a>缓存(stash)相关</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">git stash list</span><br><span class="line">git stash save &#x27;&lt;stash name&gt;&#x27;</span><br><span class="line">git stash show</span><br><span class="line">git stash show -p</span><br><span class="line">git stash apply [@&#123;num&#125;]</span><br><span class="line">git stash pop [@&#123;num&#125;]</span><br><span class="line">git stash drop</span><br><span class="line">git stash clear</span><br></pre></td></tr></table></figure><h2 id="状态-status"><a href="#状态-status" class="headerlink" title="状态(status)"></a>状态(status)</h2><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git status</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;&lt;img src=&quot;/images/git.png&quot; alt=&quot;git&quot;&gt;&lt;/p&gt;
+&lt;p&gt;在这里记录一些常用的&lt;code&gt;git&lt;/code&gt;指令，以及使用时碰到的一些问题及相应的解决办法。&lt;/p&gt;</summary>
+    
+    
+    
+    <category term="guide" scheme="https://fongzhizhi.github.io/categories/guide/"/>
+    
+    <category term="git" scheme="https://fongzhizhi.github.io/categories/guide/git/"/>
+    
+    
+    <category term="git" scheme="https://fongzhizhi.github.io/tags/git/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>模板使用说明</title>
+    <link href="https://fongzhizhi.github.io/2020/08/22/template/"/>
+    <id>https://fongzhizhi.github.io/2020/08/22/template/</id>
+    <published>2020-08-22T05:30:00.000Z</published>
+    <updated>2020-08-22T05:39:31.562Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>这是一篇<code>markdown</code>模板说明文档。</p><a id="more"></a><h2 id="文章信息"><a href="#文章信息" class="headerlink" title="文章信息"></a>文章信息</h2><p>这是一篇模板文档，顶头的信息包含文章的基本信息，包含文章标题、创建日期、标签等等，可自行设置。</p><p>比如我们可以在文章顶头使用下面的字段标识文章一些基本信息：</p><figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 文章名</span><br><span class="line">date: 2017-10-31 20:38:17     //发表日期</span><br><span class="line">updated: 2017-10-31 21:58:03  //更新日期</span><br><span class="line">categories: Life              //文章分类</span><br><span class="line">tags: [tag1,tag2]             //文章标签，多标签时使用英文逗号隔开</span><br><span class="line">photos:                       //如果使用Fancybox（文章头部展示图片），如此设置  </span><br><span class="line">                              //注意冒号后面有空格</span><br><span class="line">---</span><br></pre></td></tr></table></figure><h2 id="预览"><a href="#预览" class="headerlink" title="预览"></a>预览</h2><p>我们使用下面这个标记，可以让文档预览时只显示标记以上的部分。</p><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- more --&gt;</span></span><br></pre></td></tr></table></figure><h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 看一下代码效果</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;hello world!&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h2&gt;&lt;p&gt;这是一篇&lt;code&gt;markdown&lt;/code&gt;模板说明文档。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Hexo" scheme="https://fongzhizhi.github.io/tags/Hexo/"/>
+    
+    <category term="说明" scheme="https://fongzhizhi.github.io/tags/%E8%AF%B4%E6%98%8E/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="https://fongzhizhi.github.io/2020/08/21/hello-world/"/>
+    <id>https://fongzhizhi.github.io/2020/08/21/hello-world/</id>
+    <published>2020-08-21T14:42:32.826Z</published>
+    <updated>2020-08-22T05:42:24.277Z</updated>
+    
+    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><a id="more"></a><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt; for more info. If you get any problems when using Hexo, you can find the answer in &lt;a href=&quot;https://hexo.io/docs/troubleshooting.html&quot;&gt;troubleshooting&lt;/a&gt; or you can ask me on &lt;a href=&quot;https://github.com/hexojs/hexo/issues&quot;&gt;GitHub&lt;/a&gt;.&lt;/p&gt;</summary>
+    
+    
+    
+    
+  </entry>
+  
+  <entry>
+    <title>hexo使用规则</title>
+    <link href="https://fongzhizhi.github.io/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/"/>
+    <id>https://fongzhizhi.github.io/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/</id>
+    <published>2020-08-20T16:00:00.000Z</published>
+    <updated>2020-08-22T05:35:00.000Z</updated>
+    
+    <content type="html"><![CDATA[<p>Hexo使用说明。</p><blockquote><p>更多说明请参考：<a href="https://hexo.io/zh-cn/docs">https://hexo.io/zh-cn/docs</a></p></blockquote><a id="more"></a><h2 id="开启本地服务器"><a href="#开启本地服务器" class="headerlink" title="开启本地服务器"></a>开启本地服务器</h2><p>如果想在本地预览效果，在文件根目录使用<code>git</code>指令：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo s #默认端口4000</span><br><span class="line">hexo s -p 8080 #修改端口号为8080(比如端口被占用的时候)</span><br></pre></td></tr></table></figure><p>访问：<a href="http://localhost:4000/">http://localhost:4000/</a>。</p><p>关闭服务器：<code>Ctrl + C</code>.</p><h2 id="生成静态文件"><a href="#生成静态文件" class="headerlink" title="生成静态文件"></a>生成静态文件</h2><p>如果你的文段没有正常显示，说明没有解析为静态文件（<code>html</code>），这个时候需要手动解析：</p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo generate #解析静态文件</span><br><span class="line">hexo generate --deploy #解析并自动部署</span><br><span class="line">hexo g --d #简写形式1</span><br><span class="line">hexo d --g #简写形式2</span><br></pre></td></tr></table></figure><h2 id="一件部署"><a href="#一件部署" class="headerlink" title="一件部署"></a>一件部署</h2><p>在执行部署(提交到<code>github</code>或其他站点)指令前，需要设置根目录配置文件<code>_config.yml</code>：找到<code>deploy</code>字段，修改：</p><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">https://github.com/fongzhizhi/fongzhizhi.github.io</span> <span class="comment">#改为你的github仓库地址</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">master</span> <span class="comment">#该仓库的默认分支</span></span><br><span class="line">  <span class="attr">message:</span> <span class="string">hexo一键部署</span> <span class="comment">#提交信息</span></span><br></pre></td></tr></table></figure><p>然后执行一件部署指令：<strong>可以选择一下指令之一</strong></p><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean &amp;&amp; hexo deploy #清除一些缓存并部署到远程</span><br><span class="line">hexo g --d #解析并部署</span><br></pre></td></tr></table></figure><p>然后过几秒钟，刷新你的站点就能看到效果啦！</p><h2 id="其他说明"><a href="#其他说明" class="headerlink" title="其他说明"></a>其他说明</h2><p>文章都放在<code>source\</code>目录的其他下（根据不同类型放置）。写完记得静态解析，然后再部署。</p>]]></content>
+    
+    
+    <summary type="html">&lt;p&gt;Hexo使用说明。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;更多说明请参考：&lt;a href=&quot;https://hexo.io/zh-cn/docs&quot;&gt;https://hexo.io/zh-cn/docs&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;</summary>
+    
+    
+    
+    
+    <category term="Hexo" scheme="https://fongzhizhi.github.io/tags/Hexo/"/>
+    
+    <category term="说明" scheme="https://fongzhizhi.github.io/tags/%E8%AF%B4%E6%98%8E/"/>
+    
+  </entry>
+  
+</feed>
