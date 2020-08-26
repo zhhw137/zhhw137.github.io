@@ -166,27 +166,6 @@
   </entry>
   
   <entry>
-    <title>模板使用说明</title>
-    <link href="https://zhhw137.github.io/2020/08/22/template-zhhw%20-%20%E5%89%AF%E6%9C%AC/"/>
-    <id>https://zhhw137.github.io/2020/08/22/template-zhhw%20-%20%E5%89%AF%E6%9C%AC/</id>
-    <published>2020-08-22T05:30:00.000Z</published>
-    <updated>2020-08-23T11:57:45.730Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>这是一篇<code>markdown</code>模板说明文档。</p><a id="more"></a>]]></content>
-    
-    
-    <summary type="html">&lt;h2 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h2&gt;&lt;p&gt;这是一篇&lt;code&gt;markdown&lt;/code&gt;模板说明文档。&lt;/p&gt;</summary>
-    
-    
-    
-    
-    <category term="Hexo" scheme="https://zhhw137.github.io/tags/Hexo/"/>
-    
-    <category term="说明" scheme="https://zhhw137.github.io/tags/%E8%AF%B4%E6%98%8E/"/>
-    
-  </entry>
-  
-  <entry>
     <title>hexo使用规则</title>
     <link href="https://zhhw137.github.io/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/"/>
     <id>https://zhhw137.github.io/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/</id>
