@@ -6,7 +6,7 @@
   <link href="https://zhhw137.github.io/atom.xml" rel="self"/>
   
   <link href="https://zhhw137.github.io/"/>
-  <updated>2020-08-22T05:42:24.277Z</updated>
+  <updated>2020-08-26T02:54:17.537Z</updated>
   <id>https://zhhw137.github.io/</id>
   
   <author>
@@ -15,6 +15,50 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>流水线</title>
+    <link href="https://zhhw137.github.io/2020/08/26/%E6%B5%81%E6%B0%B4%E7%BA%BF/"/>
+    <id>https://zhhw137.github.io/2020/08/26/%E6%B5%81%E6%B0%B4%E7%BA%BF/</id>
+    <published>2020-08-25T16:00:00.000Z</published>
+    <updated>2020-08-26T02:54:17.537Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="流水线"><a href="#流水线" class="headerlink" title="流水线"></a>流水线</h2><p>对，你没看错，这篇的主要内容是流水线，IT工人也是工人，流水线加快速度自然是一个更加方便资本主义压榨的好方法了。<img src="/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg" alt="git">)</p><a id="more"></a><p>上篇文章，说了一堆关于rancher和k8s的基本概念和知识，其实小编自己也没有弄懂。成本有限的情况下，蹭了一台别人的机器上的虚拟机(配置还是很高的,双核,64G,1T)尝试着搭建了下k8s，照着命令倒是把master和node搭建在这一台机器上成功了，但是rancher成功之后，因为不可抗力最后没有看到实际效果。暂时就放弃了<img src="/images/%E6%8D%82%E8%84%B8%E7%AC%91.jpg" alt="git"></p><p>言归正传。</p><p>所谓流水线，指的是rancher上的流水线，即自动从gitlab上读取代码，打包，构建镜像，部署、启动程序一气呵成的流水线。下面让我们来看下具体流程</p><p>1、harbor镜像仓库安装</p><p>rancher的资源镜像库中添加</p><p>2、流水线配置</p><p>rancher的可视化平台上，工具上进行流水线配置。这里会绑定代码库等配置</p><p>3、实际项目文件书写</p><p>上面俩步，公司的大佬完成后我因为权限不足，也就是结合着其他博客等知识大概看了看，没有实际上手经验就不多说了<img src="/images/%E8%AF%B4%E4%B8%8D%E5%87%BA%E8%AF%9D.jpg" alt="git"></p><p>但是，说道给项目编写配置文件触发流水线<img src="/images/%E4%B8%8D%E5%9B%B0%E4%BA%86.jpg" alt="git"></p><h3 id="配置文件"><a href="#配置文件" class="headerlink" title="配置文件"></a>配置文件</h3><p>1、.rancher-pipeline.yml</p><p>​    该配置文件即为流水线的主要配置文件，也是正常看到的流水线clone、build、publish、deploy四步的原因<img src="/images/%E6%B5%81%E6%B0%B4%E7%BA%BF/%E6%B5%81%E6%B0%B4%E7%BA%BF%E6%97%A5%E5%BF%97.png" alt="git"></p><figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">stages:</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">build</span></span><br><span class="line">  <span class="attr">steps:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">runScriptConfig:</span></span><br><span class="line">      <span class="attr">image:</span> <span class="string">maven:3.6.0-jdk-8-alpine</span></span><br><span class="line">      <span class="attr">shellScript:</span> <span class="string">mvn</span> <span class="string">clean</span> <span class="string">package</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">push-image</span></span><br><span class="line">  <span class="attr">steps:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">publishImageConfig:</span></span><br><span class="line">      <span class="attr">dockerfilePath:</span> <span class="string">./Dockerfile</span></span><br><span class="line">      <span class="attr">buildContext:</span> <span class="string">.</span></span><br><span class="line">      <span class="attr">tag:</span> <span class="string">scc/hyperloop-baseapi:$&#123;CICD_EXECUTION_SEQUENCE&#125;</span></span><br><span class="line">      <span class="attr">pushRemote:</span> <span class="literal">true</span></span><br><span class="line">      <span class="attr">registry:</span> <span class="string">registry.cn-hangzhou.aliyuncs.com</span></span><br><span class="line"><span class="bullet">-</span> <span class="attr">name:</span> <span class="string">deploy</span></span><br><span class="line">  <span class="attr">steps:</span></span><br><span class="line">  <span class="bullet">-</span> <span class="attr">applyYamlConfig:</span></span><br><span class="line">      <span class="attr">path:</span> <span class="string">./deployment.yaml</span></span><br><span class="line"><span class="attr">timeout:</span> <span class="number">60</span></span><br></pre></td></tr></table></figure><ul><li>该配置文件一定要写在项目的根目录下</li><li>clone 根据上面配置的代码库和流水线配置直接去拉取代码，无须写</li><li>bulid mavn命令进行代码打包</li><li>publish  <ul><li>根据dockerfilepath中对应的dockerfile文件读取对应的docker命令发布镜像</li><li>tag本次镜像仓库的地址 scc/hyperloop-baseapi 这里应该为你的镜像仓库地址</li></ul></li><li>deploy  path对应的是部署镜像的文件地址</li></ul><p>2、Dockerfile</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">FROM    xx&#x2F;system&#x2F;openjdk:8-jdk-alpine</span><br><span class="line">ADD        xx.jar  &#x2F;app.jar</span><br><span class="line"></span><br><span class="line">ENTRYPOINT [&quot;java&quot;,&quot;-Djava.security.egd&#x3D;file:&#x2F;dev&#x2F;.&#x2F;urandom&quot;,&quot;-jar&quot;,&quot;&#x2F;app.jar&quot;]</span><br></pre></td></tr></table></figure><ul><li>FROM  指定基础镜像路径</li><li>ADD  生成的jar包名称和打包项目路径</li><li>ENTRYPOINT 运行项目 -D 是新增参数，参数的名字叫 java.security.egd ，参数的值叫 file:/dev/./urandom，是为了解决随机数生成的问题(看解释是因为jdk的一个bug导致,指定随机数生成可以优化性能，在一定程度上加快程序启动)<img src="/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg" alt="git">)</li></ul><p>以上就是我目前对流水线的初步认识了，后续了解加上会再补充一篇文章。</p>]]></content>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;流水线&quot;&gt;&lt;a href=&quot;#流水线&quot; class=&quot;headerlink&quot; title=&quot;流水线&quot;&gt;&lt;/a&gt;流水线&lt;/h2&gt;&lt;p&gt;对，你没看错，这篇的主要内容是流水线，IT工人也是工人，流水线加快速度自然是一个更加方便资本主义压榨的好方法了。&lt;img src=&quot;/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg&quot; alt=&quot;git&quot;&gt;)&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="rancher" scheme="https://zhhw137.github.io/tags/rancher/"/>
+    
+    <category term="k8s" scheme="https://zhhw137.github.io/tags/k8s/"/>
+    
+    <category term="流水线" scheme="https://zhhw137.github.io/tags/%E6%B5%81%E6%B0%B4%E7%BA%BF/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Rancher+k8s初识</title>
+    <link href="https://zhhw137.github.io/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/"/>
+    <id>https://zhhw137.github.io/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/</id>
+    <published>2020-08-24T16:00:00.000Z</published>
+    <updated>2020-08-26T01:59:38.495Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="Rancher-k8s初识"><a href="#Rancher-k8s初识" class="headerlink" title="Rancher+k8s初识"></a>Rancher+k8s初识</h2><p>8月13号，Docker公司的最新服务条款中明确指出：禁止美国“实体清单”上的实体使用(其中包括华为、奇虎360、科大讯飞等中国IT公司)。让这一时下最流行的容器管理技术，又实实在在的火了一波。所以，今天让我们来看看它的替代品之二：rancher+k8s。(主要笔者还不会docker<img src="/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg" alt="git">)</p><a id="more"></a><h3 id="存在即合理"><a href="#存在即合理" class="headerlink" title="存在即合理"></a>存在即合理</h3><p>1、容器技术的兴起：虚拟机是在容器技术大行其道之前，开发和运维成员的主流技术。但是其高昂的移植成本、启动慢和占用空间大等问题，为以docker为代表的容器管理技术的兴起埋下伏笔。所谓容器化，就是放弃虚拟机虚拟整个操作系统，而是只虚拟一个小规模的环境即可。</p><p>2、微服务：为了满足业务发展而导致的用户量增多，系统数量增多和互相之间调用的依赖关系的赋值，确保系统的高可用、高并发要求，系统的架构慢慢从单机时代迁移到服务SOA时代。应运而生的就是大量的系统和容器使用。于是，一个管理所有容器的技术架构或者说工具迫在眉睫。而k8s的问世，就是提出的一套全新的基于容器技术的分布式架构领先方案。</p><h3 id="k8s"><a href="#k8s" class="headerlink" title="k8s"></a>k8s</h3><p>k8s全称kubernetes，为了应对微服务而兴起的分布式架构，既然是分布式，则必然有着集群的部署条件。</p><p>k8s集群由master节点和Node节点组成，</p><p><strong>Master节点</strong></p><p>master节点是集群的控制节点，管理和控制整个集群，它负责具体的执行过程，其上运行着：</p><ol><li>Kubernetes Controller Manager（kube-controller-manager）：k8s中所有资源对象的自动化控制中心，维护管理集群的状态，比如故障检测，自动扩展，滚动更新等。</li><li>Kubernetes Scheduler（kube-scheduler）： 负责资源调度，按照预定的调度策略将Pod调度到相应的机器上。</li><li>etcd：保存整个集群的状态。</li></ol><p><strong>Node节点</strong></p><p>除了master以外的节点被称为Node或者Worker节点，可以在master中使用命令 <code>kubectl get nodes</code>查看集群中的node节点。每个Node都会被Master分配一些工作负载（Docker容器），当某个Node宕机时，该节点上的工作负载就会被Master自动转移到其它节点上。在Node上主要运行着：</p><ol><li>kubelet：负责Pod对应的容器的创建、启停等任务，同时与Master密切协作，实现集群管理的基本功能</li><li>kube-proxy：实现service的通信与负载均衡</li><li>docker（Docker Engine）：Docker引擎，负责本机的容器创建和管理</li></ol><h3 id="rancher"><a href="#rancher" class="headerlink" title="rancher"></a>rancher</h3><p>技术领域，从来不会形成一家独大的情况，一项技术总会有其优缺点，也总会出现某些地方更具有优势的其他技术进行替代。所以早期的rancher的V1版本作为开源的企业级容器管理工具，其上有多种容器编排模式，例如cattle ,swarm,kubernetes。但随着，k8s势不可挡的逐渐成为主流，rancher应运而生的v2版本，则只保留了k8s的部分。</p><p>rancher，本质上可以看成是k8s更上层的管理框架，除了更加友好的界面和操作，同时，也在k8s的基础上，扩展了一些其不具有的功能如权限管理，日志收集。(详细可以看[知乎]（<a href="https://www.zhihu.com/question/309076492/answer/1150097420">https://www.zhihu.com/question/309076492/answer/1150097420</a>))</p>]]></content>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;Rancher-k8s初识&quot;&gt;&lt;a href=&quot;#Rancher-k8s初识&quot; class=&quot;headerlink&quot; title=&quot;Rancher+k8s初识&quot;&gt;&lt;/a&gt;Rancher+k8s初识&lt;/h2&gt;&lt;p&gt;8月13号，Docker公司的最新服务条款中明确指出：禁止美国“实体清单”上的实体使用(其中包括华为、奇虎360、科大讯飞等中国IT公司)。让这一时下最流行的容器管理技术，又实实在在的火了一波。所以，今天让我们来看看它的替代品之二：rancher+k8s。(主要笔者还不会docker&lt;img src=&quot;/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg&quot; alt=&quot;git&quot;&gt;)&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="rancher" scheme="https://zhhw137.github.io/tags/rancher/"/>
+    
+    <category term="k8s" scheme="https://zhhw137.github.io/tags/k8s/"/>
+    
+  </entry>
   
   <entry>
     <title>Hello World</title>
@@ -86,6 +130,49 @@
     <updated>2020-08-22T05:39:31.562Z</updated>
     
     <content type="html"><![CDATA[<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>这是一篇<code>markdown</code>模板说明文档。</p><a id="more"></a><h2 id="文章信息"><a href="#文章信息" class="headerlink" title="文章信息"></a>文章信息</h2><p>这是一篇模板文档，顶头的信息包含文章的基本信息，包含文章标题、创建日期、标签等等，可自行设置。</p><p>比如我们可以在文章顶头使用下面的字段标识文章一些基本信息：</p><figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">---</span><br><span class="line">title: 文章名</span><br><span class="line">date: 2017-10-31 20:38:17     //发表日期</span><br><span class="line">updated: 2017-10-31 21:58:03  //更新日期</span><br><span class="line">categories: Life              //文章分类</span><br><span class="line">tags: [tag1,tag2]             //文章标签，多标签时使用英文逗号隔开</span><br><span class="line">photos:                       //如果使用Fancybox（文章头部展示图片），如此设置  </span><br><span class="line">                              //注意冒号后面有空格</span><br><span class="line">---</span><br></pre></td></tr></table></figure><h2 id="预览"><a href="#预览" class="headerlink" title="预览"></a>预览</h2><p>我们使用下面这个标记，可以让文档预览时只显示标记以上的部分。</p><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- more --&gt;</span></span><br></pre></td></tr></table></figure><h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 看一下代码效果</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">hello</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;hello world!&#x27;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">hello();</span><br></pre></td></tr></table></figure>]]></content>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h2&gt;&lt;p&gt;这是一篇&lt;code&gt;markdown&lt;/code&gt;模板说明文档。&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Hexo" scheme="https://zhhw137.github.io/tags/Hexo/"/>
+    
+    <category term="说明" scheme="https://zhhw137.github.io/tags/%E8%AF%B4%E6%98%8E/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>模板使用说明</title>
+    <link href="https://zhhw137.github.io/2020/08/22/%E7%AE%97%E6%B3%95/"/>
+    <id>https://zhhw137.github.io/2020/08/22/%E7%AE%97%E6%B3%95/</id>
+    <published>2020-08-22T05:30:00.000Z</published>
+    <updated>2020-08-26T01:24:00.657Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>1、回溯</p><p>2、kmp</p><a id="more"></a>]]></content>
+    
+    
+    <summary type="html">&lt;h2 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h2&gt;&lt;p&gt;1、回溯&lt;/p&gt;
+&lt;p&gt;2、kmp&lt;/p&gt;</summary>
+    
+    
+    
+    
+    <category term="Hexo" scheme="https://zhhw137.github.io/tags/Hexo/"/>
+    
+    <category term="说明" scheme="https://zhhw137.github.io/tags/%E8%AF%B4%E6%98%8E/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>模板使用说明</title>
+    <link href="https://zhhw137.github.io/2020/08/22/template-zhhw%20-%20%E5%89%AF%E6%9C%AC/"/>
+    <id>https://zhhw137.github.io/2020/08/22/template-zhhw%20-%20%E5%89%AF%E6%9C%AC/</id>
+    <published>2020-08-22T05:30:00.000Z</published>
+    <updated>2020-08-23T11:57:45.730Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>这是一篇<code>markdown</code>模板说明文档。</p><a id="more"></a>]]></content>
     
     
     <summary type="html">&lt;h2 id=&quot;说明&quot;&gt;&lt;a href=&quot;#说明&quot; class=&quot;headerlink&quot; title=&quot;说明&quot;&gt;&lt;/a&gt;说明&lt;/h2&gt;&lt;p&gt;这是一篇&lt;code&gt;markdown&lt;/code&gt;模板说明文档。&lt;/p&gt;</summary>

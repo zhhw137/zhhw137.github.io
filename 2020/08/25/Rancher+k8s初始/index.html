@@ -20,21 +20,23 @@
     var CONFIG = {"hostname":"zhhw137.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="Hexo使用说明。  更多说明请参考：https:&#x2F;&#x2F;hexo.io&#x2F;zh-cn&#x2F;docs">
+  <meta name="description" content="Rancher+k8s初识8月13号，Docker公司的最新服务条款中明确指出：禁止美国“实体清单”上的实体使用(其中包括华为、奇虎360、科大讯飞等中国IT公司)。让这一时下最流行的容器管理技术，又实实在在的火了一波。所以，今天让我们来看看它的替代品之二：rancher+k8s。(主要笔者还不会docker)">
 <meta property="og:type" content="article">
-<meta property="og:title" content="hexo使用规则">
-<meta property="og:url" content="https://zhhw137.github.io/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/index.html">
+<meta property="og:title" content="Rancher+k8s初识">
+<meta property="og:url" content="https://zhhw137.github.io/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/index.html">
 <meta property="og:site_name" content="zhhw的Blog">
-<meta property="og:description" content="Hexo使用说明。  更多说明请参考：https:&#x2F;&#x2F;hexo.io&#x2F;zh-cn&#x2F;docs">
+<meta property="og:description" content="Rancher+k8s初识8月13号，Docker公司的最新服务条款中明确指出：禁止美国“实体清单”上的实体使用(其中包括华为、奇虎360、科大讯飞等中国IT公司)。让这一时下最流行的容器管理技术，又实实在在的火了一波。所以，今天让我们来看看它的替代品之二：rancher+k8s。(主要笔者还不会docker)">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-08-20T16:00:00.000Z">
-<meta property="article:modified_time" content="2020-08-22T05:35:00.000Z">
+<meta property="og:image" content="https://zhhw137.github.io/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg">
+<meta property="article:published_time" content="2020-08-24T16:00:00.000Z">
+<meta property="article:modified_time" content="2020-08-26T01:59:38.495Z">
 <meta property="article:author" content="zhhw">
-<meta property="article:tag" content="Hexo">
-<meta property="article:tag" content="说明">
+<meta property="article:tag" content="rancher">
+<meta property="article:tag" content="k8s">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhhw137.github.io/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg">
 
-<link rel="canonical" href="https://zhhw137.github.io/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/">
+<link rel="canonical" href="https://zhhw137.github.io/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/">
 
 
 <script id="page-configurations">
@@ -47,7 +49,7 @@
   };
 </script>
 
-  <title>hexo使用规则 | zhhw的Blog</title>
+  <title>Rancher+k8s初识 | zhhw的Blog</title>
   
 
 
@@ -169,7 +171,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://zhhw137.github.io/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/">
+    <link itemprop="mainEntityOfPage" href="https://zhhw137.github.io/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -182,7 +184,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          hexo使用规则
+          Rancher+k8s初识
         </h1>
 
         <div class="post-meta">
@@ -192,18 +194,18 @@
               </span>
               <span class="post-meta-item-text">发表于</span>
 
-              <time title="创建时间：2020-08-21 00:00:00" itemprop="dateCreated datePublished" datetime="2020-08-21T00:00:00+08:00">2020-08-21</time>
+              <time title="创建时间：2020-08-25 00:00:00" itemprop="dateCreated datePublished" datetime="2020-08-25T00:00:00+08:00">2020-08-25</time>
             </span>
               <span class="post-meta-item">
                 <span class="post-meta-item-icon">
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-22 13:35:00" itemprop="dateModified" datetime="2020-08-22T13:35:00+08:00">2020-08-22</time>
+                <time title="修改时间：2020-08-26 09:59:38" itemprop="dateModified" datetime="2020-08-26T09:59:38+08:00">2020-08-26</time>
               </span>
 
           
-            <span id="/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/" class="post-meta-item leancloud_visitors" data-flag-title="hexo使用规则" title="阅读次数">
+            <span id="/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/" class="post-meta-item leancloud_visitors" data-flag-title="Rancher+k8s初识" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -218,8 +220,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/21/hexo%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8%E8%A7%84%E5%88%99/" itemprop="commentCount"></span>
+    <a title="valine" href="/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/25/Rancher+k8s%E5%88%9D%E5%A7%8B/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -234,28 +236,29 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>Hexo使用说明。</p>
-<blockquote>
-<p>更多说明请参考：<a target="_blank" rel="noopener" href="https://hexo.io/zh-cn/docs">https://hexo.io/zh-cn/docs</a></p>
-</blockquote>
+        <h2 id="Rancher-k8s初识"><a href="#Rancher-k8s初识" class="headerlink" title="Rancher+k8s初识"></a>Rancher+k8s初识</h2><p>8月13号，Docker公司的最新服务条款中明确指出：禁止美国“实体清单”上的实体使用(其中包括华为、奇虎360、科大讯飞等中国IT公司)。让这一时下最流行的容器管理技术，又实实在在的火了一波。所以，今天让我们来看看它的替代品之二：rancher+k8s。(主要笔者还不会docker<img src="/images/%E6%90%9E%E7%AC%91%E7%8B%97%E5%A4%B4%E8%84%B8.jpg" alt="git">)</p>
 <a id="more"></a>
 
-<h2 id="开启本地服务器"><a href="#开启本地服务器" class="headerlink" title="开启本地服务器"></a>开启本地服务器</h2><p>如果想在本地预览效果，在文件根目录使用<code>git</code>指令：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo s #默认端口4000</span><br><span class="line">hexo s -p 8080 #修改端口号为8080(比如端口被占用的时候)</span><br></pre></td></tr></table></figure>
-
-<p>访问：<a target="_blank" rel="noopener" href="http://localhost:4000/">http://localhost:4000/</a>。</p>
-<p>关闭服务器：<code>Ctrl + C</code>.</p>
-<h2 id="生成静态文件"><a href="#生成静态文件" class="headerlink" title="生成静态文件"></a>生成静态文件</h2><p>如果你的文段没有正常显示，说明没有解析为静态文件（<code>html</code>），这个时候需要手动解析：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">hexo generate #解析静态文件</span><br><span class="line">hexo generate --deploy #解析并自动部署</span><br><span class="line">hexo g --d #简写形式1</span><br><span class="line">hexo d --g #简写形式2</span><br></pre></td></tr></table></figure>
-
-<h2 id="一件部署"><a href="#一件部署" class="headerlink" title="一件部署"></a>一件部署</h2><p>在执行部署(提交到<code>github</code>或其他站点)指令前，需要设置根目录配置文件<code>_config.yml</code>：找到<code>deploy</code>字段，修改：</p>
-<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">deploy:</span></span><br><span class="line">  <span class="attr">type:</span> <span class="string">git</span></span><br><span class="line">  <span class="attr">repo:</span> <span class="string">https://github.com/fongzhizhi/fongzhizhi.github.io</span> <span class="comment">#改为你的github仓库地址</span></span><br><span class="line">  <span class="attr">branch:</span> <span class="string">master</span> <span class="comment">#该仓库的默认分支</span></span><br><span class="line">  <span class="attr">message:</span> <span class="string">hexo一键部署</span> <span class="comment">#提交信息</span></span><br></pre></td></tr></table></figure>
-
-<p>然后执行一件部署指令：<strong>可以选择一下指令之一</strong></p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">hexo clean &amp;&amp; hexo deploy #清除一些缓存并部署到远程</span><br><span class="line">hexo g --d #解析并部署</span><br></pre></td></tr></table></figure>
-
-<p>然后过几秒钟，刷新你的站点就能看到效果啦！</p>
-<h2 id="其他说明"><a href="#其他说明" class="headerlink" title="其他说明"></a>其他说明</h2><p>文章都放在<code>source\</code>目录的其他下（根据不同类型放置）。写完记得静态解析，然后再部署。</p>
+<h3 id="存在即合理"><a href="#存在即合理" class="headerlink" title="存在即合理"></a>存在即合理</h3><p>1、容器技术的兴起：虚拟机是在容器技术大行其道之前，开发和运维成员的主流技术。但是其高昂的移植成本、启动慢和占用空间大等问题，为以docker为代表的容器管理技术的兴起埋下伏笔。所谓容器化，就是放弃虚拟机虚拟整个操作系统，而是只虚拟一个小规模的环境即可。</p>
+<p>2、微服务：为了满足业务发展而导致的用户量增多，系统数量增多和互相之间调用的依赖关系的赋值，确保系统的高可用、高并发要求，系统的架构慢慢从单机时代迁移到服务SOA时代。应运而生的就是大量的系统和容器使用。于是，一个管理所有容器的技术架构或者说工具迫在眉睫。而k8s的问世，就是提出的一套全新的基于容器技术的分布式架构领先方案。</p>
+<h3 id="k8s"><a href="#k8s" class="headerlink" title="k8s"></a>k8s</h3><p>k8s全称kubernetes，为了应对微服务而兴起的分布式架构，既然是分布式，则必然有着集群的部署条件。</p>
+<p>k8s集群由master节点和Node节点组成，</p>
+<p><strong>Master节点</strong></p>
+<p>master节点是集群的控制节点，管理和控制整个集群，它负责具体的执行过程，其上运行着：</p>
+<ol>
+<li>Kubernetes Controller Manager（kube-controller-manager）：k8s中所有资源对象的自动化控制中心，维护管理集群的状态，比如故障检测，自动扩展，滚动更新等。</li>
+<li>Kubernetes Scheduler（kube-scheduler）： 负责资源调度，按照预定的调度策略将Pod调度到相应的机器上。</li>
+<li>etcd：保存整个集群的状态。</li>
+</ol>
+<p><strong>Node节点</strong></p>
+<p>除了master以外的节点被称为Node或者Worker节点，可以在master中使用命令 <code>kubectl get nodes</code>查看集群中的node节点。每个Node都会被Master分配一些工作负载（Docker容器），当某个Node宕机时，该节点上的工作负载就会被Master自动转移到其它节点上。在Node上主要运行着：</p>
+<ol>
+<li>kubelet：负责Pod对应的容器的创建、启停等任务，同时与Master密切协作，实现集群管理的基本功能</li>
+<li>kube-proxy：实现service的通信与负载均衡</li>
+<li>docker（Docker Engine）：Docker引擎，负责本机的容器创建和管理</li>
+</ol>
+<h3 id="rancher"><a href="#rancher" class="headerlink" title="rancher"></a>rancher</h3><p>技术领域，从来不会形成一家独大的情况，一项技术总会有其优缺点，也总会出现某些地方更具有优势的其他技术进行替代。所以早期的rancher的V1版本作为开源的企业级容器管理工具，其上有多种容器编排模式，例如cattle ,swarm,kubernetes。但随着，k8s势不可挡的逐渐成为主流，rancher应运而生的v2版本，则只保留了k8s的部分。</p>
+<p>rancher，本质上可以看成是k8s更上层的管理框架，除了更加友好的界面和操作，同时，也在k8s的基础上，扩展了一些其不具有的功能如权限管理，日志收集。(详细可以看[知乎]（<a target="_blank" rel="noopener" href="https://www.zhihu.com/question/309076492/answer/1150097420">https://www.zhihu.com/question/309076492/answer/1150097420</a>))</p>
 
     </div>
 
@@ -286,8 +289,8 @@
       <footer class="post-footer">
           
           <div class="post-tags">
-              <a href="/tags/Hexo/" rel="tag"><i class="fa fa-tag"></i> Hexo</a>
-              <a href="/tags/%E8%AF%B4%E6%98%8E/" rel="tag"><i class="fa fa-tag"></i> 说明</a>
+              <a href="/tags/rancher/" rel="tag"><i class="fa fa-tag"></i> rancher</a>
+              <a href="/tags/k8s/" rel="tag"><i class="fa fa-tag"></i> k8s</a>
           </div>
 
         
@@ -295,10 +298,13 @@
 
         
     <div class="post-nav">
-      <div class="post-nav-item"></div>
       <div class="post-nav-item">
-    <a href="/2020/08/22/template-zhhw%20-%20%E5%89%AF%E6%9C%AC/" rel="next" title="模板使用说明">
-      模板使用说明 <i class="fa fa-chevron-right"></i>
+    <a href="/2020/08/23/hello-world/" rel="prev" title="Hello World">
+      <i class="fa fa-chevron-left"></i> Hello World
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/26/%E6%B5%81%E6%B0%B4%E7%BA%BF/" rel="next" title="流水线">
+      流水线 <i class="fa fa-chevron-right"></i>
     </a></div>
     </div>
       </footer>
@@ -359,7 +365,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%80%E5%90%AF%E6%9C%AC%E5%9C%B0%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">1.</span> <span class="nav-text">开启本地服务器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%94%9F%E6%88%90%E9%9D%99%E6%80%81%E6%96%87%E4%BB%B6"><span class="nav-number">2.</span> <span class="nav-text">生成静态文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%80%E4%BB%B6%E9%83%A8%E7%BD%B2"><span class="nav-number">3.</span> <span class="nav-text">一件部署</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E8%AF%B4%E6%98%8E"><span class="nav-number">4.</span> <span class="nav-text">其他说明</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Rancher-k8s%E5%88%9D%E8%AF%86"><span class="nav-number">1.</span> <span class="nav-text">Rancher+k8s初识</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AD%98%E5%9C%A8%E5%8D%B3%E5%90%88%E7%90%86"><span class="nav-number">1.1.</span> <span class="nav-text">存在即合理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#k8s"><span class="nav-number">1.2.</span> <span class="nav-text">k8s</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#rancher"><span class="nav-number">1.3.</span> <span class="nav-text">rancher</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
