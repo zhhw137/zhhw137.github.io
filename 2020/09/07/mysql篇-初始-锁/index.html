@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhhw137.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="说明Mysql初始篇，主要建立在《MySQL技术内幕：Innodb存储引擎（第二版）》的基础上，记录的知识点和一些自己验证后发现的自己的个人感觉书里表述不清的地方，当然，笔者是java后端的开发，一些比较偏DBA的地方有进行略过。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Mysql-锁">
+<meta property="og:url" content="https://zhhw137.github.io/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E5%A7%8B-%E9%94%81/index.html">
+<meta property="og:site_name" content="zhhw的Blog">
+<meta property="og:description" content="说明Mysql初始篇，主要建立在《MySQL技术内幕：Innodb存储引擎（第二版）》的基础上，记录的知识点和一些自己验证后发现的自己的个人感觉书里表述不清的地方，当然，笔者是java后端的开发，一些比较偏DBA的地方有进行略过。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-09-07T13:30:00.000Z">
+<meta property="article:modified_time" content="2020-09-07T10:31:04.748Z">
+<meta property="article:author" content="zhhw">
+<meta property="article:tag" content="mysql">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://zhhw137.github.io/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E5%A7%8B-%E9%94%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Mysql-锁 | zhhw的Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="zhhw的Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zhhw的Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">记录java学习成长</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zhhw137.github.io/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E5%A7%8B-%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zhhw">
+      <meta itemprop="description" content="欢迎联系">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zhhw的Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Mysql-锁
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-09-07 21:30:00 / 修改时间：18:31:04" itemprop="dateCreated datePublished" datetime="2020-09-07T21:30:00+08:00">2020-09-07</time>
+            </span>
+
+          
+            <span id="/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E5%A7%8B-%E9%94%81/" class="post-meta-item leancloud_visitors" data-flag-title="Mysql-锁" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E5%A7%8B-%E9%94%81/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E5%A7%8B-%E9%94%81/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>Mysql初始篇，主要建立在《MySQL技术内幕：Innodb存储引擎（第二版）》的基础上，记录的知识点和一些自己验证后发现的自己的个人感觉书里表述不清的地方，当然，笔者是java后端的开发，一些比较偏DBA的地方有进行略过。</p>
+<a id="more"></a>
+
+<h3 id="锁"><a href="#锁" class="headerlink" title="锁"></a>锁</h3><p>锁是数据库系统区别于文件系统的一个关键特性。锁机制用于管理对共享资源的并发访（）。innodb支持行锁级</p>
+<ul>
+<li><p>latch  闩锁，轻量级,对象是线程，用于保护内存数据结构，存在于每个数据结构的对象中，持续时间为临界资源，用来保证并发线程操作临界资源的正确性，并且通常没有死锁检测的机制，仅通过应用程序加锁的顺序保证无死锁的情况，要求其锁定时间必须非常短，时间长则应用性能非常差。其有俩种分类</p>
+<ul>
+<li>mutex  互斥量(互斥锁)</li>
+<li>rwlock 读写锁</li>
+</ul>
+</li>
+<li><p>lock  对象是事务，用来保护数据库内容，如表、页、行，持续在整个事务过程中，具有waits-for gtaph、time out等机制进行死锁检测与处理，存在于lock manager的哈希表中</p>
+<ul>
+<li>行锁</li>
+<li>表锁</li>
+<li>意向锁（Intention lock）</li>
+</ul>
+</li>
+</ul>
+<h4 id="行锁"><a href="#行锁" class="headerlink" title="行锁"></a>行锁</h4><p>一个事务已经获得了行r的共享锁，允许其他事务获得该行的s锁,(锁兼容) 不允许其他事务获得排他锁，只能等上面的共享锁和排他锁都释放了(锁不兼容)</p>
+<ul>
+<li>共享锁 (S Lock) 允许事务读一行数据   允许</li>
+<li>排他锁 (X Lock) 允许事务删除或更新一行数据</li>
+</ul>
+<h4 id="意向锁"><a href="#意向锁" class="headerlink" title="意向锁"></a>意向锁</h4><p>innodb支持多粒度锁定，导致允许事务执行过程中行锁和表锁同时存在。为了支持再不同粒度加锁，诞生了意向锁（intention lock），其不会阻塞除全表扫以外的任何请求。</p>
+<ul>
+<li>意向共享锁（IS Lock）,事务想要获得一张表<strong>某几行</strong>的共享锁</li>
+<li>意向排他锁（IX Lock），事务想要获得一张表中<strong>某几行</strong>的排他锁</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>IS</th>
+<th>IX</th>
+<th>S</th>
+<th>X</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>IS</td>
+<td>兼容</td>
+<td>兼容</td>
+<td>兼容</td>
+<td>兼容</td>
+</tr>
+<tr>
+<td>IX</td>
+<td>兼容</td>
+<td>兼容</td>
+<td>不兼容</td>
+<td>不兼容</td>
+</tr>
+<tr>
+<td>S</td>
+<td>兼容</td>
+<td>不兼容</td>
+<td>兼容</td>
+<td>不兼容</td>
+</tr>
+<tr>
+<td>X</td>
+<td>不兼容</td>
+<td>不兼容</td>
+<td>不兼容</td>
+<td>不兼容</td>
+</tr>
+</tbody></table>
+<ul>
+<li><p>锁相关表</p>
+<ul>
+<li>select * from information_schema.INNODB_TRX  查看事务的相关信息</li>
+<li>select * from Performance_Schema.data_locks  查看锁相关信息（8以前 information_schema.INNODB_LOCKS） 其中一列lock_data事务锁定的记录的主键值，表锁为null，但是这个值行锁是也并不可信（范围值只锁第一行主键，锁住的页从缓冲池中被刷出，则也会显示null）</li>
+<li>select * from Performance_Schema.data_lock_waits  查看当前等待的事务以及对应的锁（8以前 information_schema.INNODB_LOCK_WAITS）</li>
+</ul>
+</li>
+<li><p>一致性非锁定读</p>
+<p>指innodb通过多版本控制的方法来读取当前执行时间数据库中行的数据。如果读取的行正在执行delete和update操作，不会去等待锁的释放，而是读取undo中该行**<em>上一个版本(事务隔离级别为REPEATALBE REDA(mysql 默认)如果是READ COMMITTED 则不是上一个版本，而是数据最初版本)**</em>的快照数据。（一行数据可能不只一个快照数据，称之为多版本并发控制Multi Version Concurrency Control ，MVCC）</p>
+</li>
+<li><p>一致性锁定读</p>
+<p> 这俩个select 锁定语句必须在事务中进行，所以一定要加上begin，start transaction或者set autocommit=0</p>
+<ul>
+<li>select_stamt for update    末尾加for update 显示的申明给该行加上x锁（不允许其他事务加锁，但是可以读，因为可以一致性非锁定读，读别的快照数据）</li>
+<li>select_stamt lock in share mode  末尾加，显示的申明给该行加上s锁</li>
+</ul>
+</li>
+<li><p>自增长与锁</p>
+<table>
+<thead>
+<tr>
+<th>插入类型</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>insert-like</td>
+<td>指所有的插入语句如insert、insert …select、repalce、load data等</td>
+</tr>
+<tr>
+<td>simple inserts</td>
+<td>插入时确定了插入的行数如insert</td>
+</tr>
+<tr>
+<td>bulk inserts</td>
+<td>插入时不能确定插入行数 如 insert …select ,replace…select</td>
+</tr>
+<tr>
+<td>mixed-mode inserts</td>
+<td>一部分数据是自增长的一部分数据是确定的，如insert 心痛（‘5’，col）</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>innodb_autoinc_lock_mode</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>只采用表锁AUTO-INC-LOCKING方式实现自增长。</td>
+</tr>
+<tr>
+<td>1</td>
+<td>simple inserts采用互斥量的方式，bulk insert采用表锁。</td>
+</tr>
+<tr>
+<td>2</td>
+<td>只采用互斥量的方式</td>
+</tr>
+</tbody></table>
+<ul>
+<li><p>外键和锁</p>
+<p>为了避免父表数据被更改或者删除，而字表插入数据，之后数据不一致。对字表数据插入时，查询父表的操作不采用一致性非锁定读的方式。</p>
+</li>
+</ul>
+<h4 id="锁定算法"><a href="#锁定算法" class="headerlink" title="锁定算法"></a>锁定算法</h4><ul>
+<li><p>Record Lock 记录锁 单个行记录上的锁</p>
+</li>
+<li><p>Gap Lock 间隙锁，锁定一个范围，但不包含记录本身</p>
+</li>
+<li><p>Next-Key Lock 临键锁：Gap Lock+Record Lock 锁定一个范围，并且锁定记录本身</p>
+<ul>
+<li>Next-Key Locking    左开右闭   （10,100] (<strong>主流</strong>)</li>
+<li>previous-key locking    左闭右开  [10,100)</li>
+</ul>
+</li>
+<li><p>对于唯一索引的锁定，next-key lock会降级成record lock，多列索引只用一个也不会降级。而普通索引则会加上next-key lock，同时给下一个辅助索引范围加上gap lock。**<em>没有索引的列或者索引失效，则进行表锁**</em></p>
+<ul>
+<li>比如 select * from tbl where b=3 for update  数据（b：1,3,6,8）俩列，a为主键，b有辅助索引</li>
+<li>这时给（1,3] 加next-key lock 给（3，6）加gap lock</li>
+</ul>
+</li>
+<li><p>俩种方式关闭</p>
+<ul>
+<li>事务隔离级别设置为READ Committed</li>
+<li>将参数innodb_locks_unsafe_for_binlog 设置为1</li>
+</ul>
+</li>
+<li><p>Phantom Problem指在同一事务下，连续执行俩次同样的sql语句可能导致不同的结果，第二次的sql语句可能会返回之前不存在的行。可以用上面的间隙锁进行避免</p>
+</li>
+</ul>
+<h4 id="锁问题"><a href="#锁问题" class="headerlink" title="锁问题"></a>锁问题</h4><ul>
+<li>脏读  不同事务下，当前事务可以读到另外事务未提交的数据。事务隔离级别是 read uncommitted时才会发生。</li>
+<li>不可重复读    指在一个事务内多次读取同一个数据集合，在这个事务还没结束时，另一个事务进行DML操作，导致第一个事务第二次读数据可能不一样。（脏读读的是未提交的数据，不可重复读读的是提交了的别的事务的值） 事务级别在reda committed以下发生（mysql通过上面的next-key lock算法避免了这样的情况，所以mysql默认的隔离级别是 read repeatable）</li>
+<li>幻读   类似于不可重复读，但是特指插入删除数据，而不可重复读特指修改数据。没有间隙锁前，只对数据加了行锁所以导致可能发生幻读，现在mysql引入间隙锁了，就不会发生了。</li>
+<li>丢失更新   主要是应用层面的，应用a和应用b都已经查出来数据为100，应用a通过事务a提交更新为50，应用b通过事务b更新为90，则最后为90，理论应该为40.解决方式，在其上面用for update加排他锁</li>
+</ul>
+<h4 id="阻塞"><a href="#阻塞" class="headerlink" title="阻塞"></a>阻塞</h4><p>一个事务中的锁需要等待另一个事务中的锁释放它所占用的资源。</p>
+<ul>
+<li>参数  innodb_lock_wait_timeout 默认50秒  阻塞等待时间 ，动态，可以在mysql运行时调整<ul>
+<li>set @@innodb_lock_wait_timeout=60;</li>
+</ul>
+</li>
+<li>参数  innodb_rollback_on_timeout  设定是否在等待超时时对进行中的事务进行回滚操作（默认off，不回滚），静态，不可以在mysql运行时调整<ul>
+<li>set @@innodb_rollback_on_timeout=on;</li>
+</ul>
+</li>
+</ul>
+<h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><p>指俩个或俩个以上的事务再执行过程中，因争夺锁资源而造成的一种互相等待的现象。</p>
+<ul>
+<li><p>回滚，将任何等待的事务都直接回滚重新执行</p>
+</li>
+<li><p>超时，设置等待阈值，如上面的innodb_lock_wait_timeout</p>
+</li>
+<li><p>wait-for graph（等待图），采用深度优先的算法主动检测死锁，根据保存的信息生成图，如果图中存在回路，则存在死锁，选择undo量最小的事务进行回滚。需要数据库保存以下俩种信息</p>
+<ul>
+<li>锁的信息链表    就是哪些事务要给该行记录增加锁的列表</li>
+<li>事务等待链表   就是按顺序加入的事务列表</li>
+</ul>
+</li>
+<li><p>锁升级  sql server存储锁按行来时，存储后所占资源内存超过激活内存的40%或者一个对象上持有的锁数量超过阈值时（5000默认）,将行锁向上审计为粗颗粒度的页锁、表锁等。 而mysql不存在这个问题，因为mysql是根据页加锁，一般资源开销不会太大。</p>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>谢谢你请我吃糖!</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="zhhw 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpg" alt="zhhw 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/mysql/" rel="tag"><i class="fa fa-tag"></i> mysql</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E8%AF%86%20-%20%E4%BA%8B%E5%8A%A1/" rel="prev" title="Mysql事务">
+      <i class="fa fa-chevron-left"></i> Mysql事务
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/09/07/mysql%E7%AF%87-%E5%88%9D%E5%A7%8B-%E5%A4%87%E4%BB%BD/" rel="next" title="Mysql备份">
+      Mysql备份 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%94%81"><span class="nav-number">1.1.</span> <span class="nav-text">锁</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%A1%8C%E9%94%81"><span class="nav-number">1.1.1.</span> <span class="nav-text">行锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%84%8F%E5%90%91%E9%94%81"><span class="nav-number">1.1.2.</span> <span class="nav-text">意向锁</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%94%81%E5%AE%9A%E7%AE%97%E6%B3%95"><span class="nav-number">1.1.3.</span> <span class="nav-text">锁定算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%94%81%E9%97%AE%E9%A2%98"><span class="nav-number">1.1.4.</span> <span class="nav-text">锁问题</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%98%BB%E5%A1%9E"><span class="nav-number">1.1.5.</span> <span class="nav-text">阻塞</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%AD%BB%E9%94%81"><span class="nav-number">1.1.6.</span> <span class="nav-text">死锁</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zhhw</p>
+  <div class="site-description" itemprop="description">欢迎联系</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhhw137" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhhw137" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:13717737201@163.com" title="Mail → mailto:13717737201@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2020/8 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhhw</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : true,
+      appId      : 'KgdHuT3kltgIrgNT6o76hovl-gzGzoHsz',
+      appKey     : '6phircWV4C7FajDWFXruKbr9',
+      placeholder: "不说点啥？",
+      avatar     : 'monsterid',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
