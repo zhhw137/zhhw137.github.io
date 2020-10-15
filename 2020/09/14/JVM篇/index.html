@@ -1,0 +1,1914 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhhw137.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":true,"show_result":true,"style":"mac"},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="说明Jvm篇根据《深入理解Java虚拟机:JVM高级特性与最佳实践（第三版）》，加上笔者自己的验证理解所做。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JVM">
+<meta property="og:url" content="https://zhhw137.github.io/2020/09/14/JVM%E7%AF%87/index.html">
+<meta property="og:site_name" content="zhhw的Blog">
+<meta property="og:description" content="说明Jvm篇根据《深入理解Java虚拟机:JVM高级特性与最佳实践（第三版）》，加上笔者自己的验证理解所做。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhhw137.github.io/images/JVM/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.png">
+<meta property="article:published_time" content="2020-09-14T12:30:00.000Z">
+<meta property="article:modified_time" content="2020-09-23T01:35:07.785Z">
+<meta property="article:author" content="zhhw">
+<meta property="article:tag" content="jvm">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhhw137.github.io/images/JVM/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.png">
+
+<link rel="canonical" href="https://zhhw137.github.io/2020/09/14/JVM%E7%AF%87/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JVM | zhhw的Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+<link rel="alternate" href="/atom.xml" title="zhhw的Blog" type="application/atom+xml">
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">zhhw的Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">记录java学习成长</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zhhw137.github.io/2020/09/14/JVM%E7%AF%87/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="zhhw">
+      <meta itemprop="description" content="欢迎联系">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="zhhw的Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JVM
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-09-14 20:30:00" itemprop="dateCreated datePublished" datetime="2020-09-14T20:30:00+08:00">2020-09-14</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-09-23 09:35:07" itemprop="dateModified" datetime="2020-09-23T09:35:07+08:00">2020-09-23</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/JVM/" itemprop="url" rel="index"><span itemprop="name">JVM</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/2020/09/14/JVM%E7%AF%87/" class="post-meta-item leancloud_visitors" data-flag-title="JVM" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/09/14/JVM%E7%AF%87/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/09/14/JVM%E7%AF%87/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="说明"><a href="#说明" class="headerlink" title="说明"></a>说明</h2><p>Jvm篇根据《深入理解Java虚拟机:JVM高级特性与最佳实践（第三版）》，加上笔者自己的验证理解所做。</p>
+<a id="more"></a>
+
+<h2 id="自动内存管理"><a href="#自动内存管理" class="headerlink" title="自动内存管理"></a>自动内存管理</h2><h3 id="1、JVM内存区域"><a href="#1、JVM内存区域" class="headerlink" title="1、JVM内存区域"></a>1、JVM内存区域</h3><p><img src="/images/JVM/JVM%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B.png" alt="JVM内存模型"></p>
+<ul>
+<li><p>程序计数器  </p>
+<ul>
+<li>是一块较小的内存空间，可以看作是当前线程所执行的字节码的行号指示器，字节码解释器通过改变这个计数器的值来选取下一条需要执行的字节码指令。</li>
+<li>每个线程都有一个自己的程序计数器，属于线程私有</li>
+<li>唯一一个不会发生OutOfMemoryError情况的区域</li>
+</ul>
+</li>
+<li><p>Java虚拟机栈（-Xss 128k）</p>
+<ul>
+<li>线程私有，生命周期和线程相同</li>
+<li>每个方法被执行时，jvm会同步创建一个用于存储局部变量表、操作数栈、动态连接、方法出口等信息的栈帧，其入栈到出栈过程即对应着一个方法从被调用到执行完毕的过程。<ul>
+<li>局部变量表：存放了编译器可知的参数类型：java的8大基本类型、对象引用（可能是引用指针或者相关地址）和returnAddress类型（指向了一条字节码指令的地址）。用局部变量槽slot表示局部变量表的存储空间。（long和double64位的这俩个用俩个变量槽，其他一个）</li>
+</ul>
+</li>
+<li>进入方法时，栈帧的分配多大的局部变量空间就完全确定了，方法运行期间不会改变局部变量表的变量槽数量。</li>
+<li>虚拟机栈存在俩种异常<ul>
+<li>Stack Overflow Error 线程请求的栈深度大于虚拟机所允许的深度（深度可以理解成数量）</li>
+<li>OutOfMemory Error 如果虚拟机栈容量可以动态扩展，当栈扩展时无法申请到足够的内存（HotSpot不可动态扩展，该异常只会发生在线程一开始申请时）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>本地方法栈  与虚拟机栈类型，只不过本地方法栈调用本地方法即native方法。（所谓native方法，就是可能并非用java实现的底层方法）</p>
+</li>
+<li><p>java堆（又称为GC堆，是垃圾收集器管理的内存区域）</p>
+<ul>
+<li>虚拟机管理内存中最大的一块。</li>
+<li>被所有线程共享的内存区域</li>
+<li><strong>对象实例信息</strong>，几乎所有的对象实例和数组都应当在堆上分配（随着java的发展，可能存在不在上面的对象）</li>
+<li>堆的大小可以是固定大小，也可以使可扩展的（基本都是可扩展的），如果没有内存完成实例分配，又不能继续扩展，抛出OutOfMemoryError异常</li>
+</ul>
+</li>
+<li><p>方法区（java虚拟机的规范，HotSpot在jdk1.8之前用永久代实现，之后用元空间）</p>
+<ul>
+<li><strong>对象类型信息</strong>，各个线程共享的内存区域，用于存储已被虚拟机加载的类型信息、常量、静态变量、即时编译器编译后的代码缓存等数据。</li>
+<li>JDK1.8前HotSpot用永久代实现方法区原因：省去专门为方法区编写内存管理的工作。（永久代在堆上浪费堆内存）</li>
+<li>JDK1.8后HotSpot用元空间实现方法区：避免了永久代实现的容易内存溢出的问题（永久代有-xx：MaxPermSize的上限，即使不设置也有默认大小）元空间使用本地内存实现，不容易内存溢出</li>
+<li>不需要连续内存，可以选择固定大小或者可扩展。这区域的回收目标主要针对常量池的回收和对类型的卸载，内存回收效果难令人满意尤其是类型的卸载（<a target="_blank" rel="noopener" href="https://blog.csdn.net/skzxyzj/article/details/82841061">CSDN博客</a>），条件相当苛刻，但是又是必须的。</li>
+</ul>
+</li>
+<li><p>运行时常量池（方法区的一部分）</p>
+<ul>
+<li>用于存放编译期生成的各种字面量与符号引用</li>
+<li>受限于方法区内存的限制，当常量池无法再申请到内存时会抛出OutOfMemoryError异常</li>
+</ul>
+</li>
+<li><p>直接内存</p>
+<ul>
+<li><p>并不是虚拟机运行时数据区的一部分，也不是《Java虚拟机规范》中定义的内存区域。</p>
+</li>
+<li><p>在JDK 1.4中新加入了NIO（New Input/Output）类，引入了一种基于通道（Channel）与缓冲区（Buffer）的I/O方式，它可以使用Native函数库直接分配堆外内存，然后通过一个存储在Java堆里面的DirectByteBuffer对象作为这块内存的引用进行操作。这样能在一些场景中显著提高性能，因为避免了在Java堆和Native堆中来回复制数据。</p>
+</li>
+<li><p>受到本机总内存大小和处理器寻址空间的限制。其他区域动态扩展或者本身动态扩展时大于物理内存限制，出现OutOfMemoryError异常</p>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2、对象"><a href="#2、对象" class="headerlink" title="2、对象"></a>2、对象</h3><h4 id="创建"><a href="#创建" class="headerlink" title="创建"></a>创建</h4><ul>
+<li><p>指针碰撞  假设Java堆中内存是绝对规整的，所有被使用过的内存都被放在一边，空闲的内存被放在另一边，中间放着一个指针作为分界点的指示器，那所分配内存就仅仅是把那个指针向空闲空间方向挪动一段与对象大小相等的距离</p>
+</li>
+<li><p>空闲列表  但如果Java堆中的内存并不是规整的，已被使用的内存和空闲的内存相互交错在一起，那就没有办法简单地进行指针碰撞了，虚拟机就必须维护一个列表，记录上哪些内存块是可用的，在分配的时候从列表中找到一块足够大的空间划分给对象实例，并更新列表上的记录</p>
+</li>
+<li><p>对象并发创建：</p>
+<ul>
+<li>采用CAS配上失败重试的方式保证更新操作的原子性</li>
+<li>把内存分配的动作按照线程划分在不同的空间之中进行，即每个线程在Java堆中预先分配一小块内存，称为本地线程分配缓冲（Thread Local Allocation Buffer，TLAB），哪个线程要分配内存，就在哪个线程的本地缓冲区中分配，只有本地缓冲区用完了，分配新的缓存区时才需要同步锁定</li>
+</ul>
+</li>
+<li><p>对象头创建</p>
+<ul>
+<li>用于存储对象自身的运行时数据，如哈希码（HashCode）、GC分代年龄、锁状态标志、线程持有的锁、偏向线程ID、偏向时间戳等</li>
+<li>类型指针 即对象指向它的类型元数据的指针 Java虚拟机通过这个指针来确定该对象是哪个类的实例。</li>
+</ul>
+</li>
+<li><p>执行构造函数方法，给字段赋默认值。完成构造</p>
+</li>
+</ul>
+<h4 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h4><p>Java程序会通过栈上的reference数据来操作堆上的具体对象。</p>
+<ul>
+<li>句柄    如果使用句柄访问的话，Java堆中将可能会划分出一块内存来作为句柄池，reference中存储的就是对象的句柄地址，而句柄中包含了对象实例数据与类型数据各自具体的地址信息（优点   reference中存储的是稳定句柄地址，在对象被移动（垃圾收集时移动对象是非常普遍的行为）时只会改变句柄中的实例数据指针，而reference本身不需要被修改。）</li>
+<li>直接指针   Java堆中对象的内存布局就必须考虑如何放置访问类型数据的相关信息，reference中存储的直接就是对象地址，如果只是访问对象本身的话，就不需要多一次间接访问的开销（优点，速度更快，节省了一次指针定位的时间开销）</li>
+</ul>
+<h3 id="3、垃圾收集器与内存分配策略"><a href="#3、垃圾收集器与内存分配策略" class="headerlink" title="3、垃圾收集器与内存分配策略"></a>3、垃圾收集器与内存分配策略</h3><h4 id="确定对象生死"><a href="#确定对象生死" class="headerlink" title="确定对象生死"></a>确定对象生死</h4><ul>
+<li><p>引用计数法  占用额外内存空间进行计数，在对象中添加一个引用计数器，每有一个引用则加一，引用失效则减一，计数器为0则表示不可能再被使用。<strong>优点</strong>：原理简单，判定效率很高。<strong>缺点</strong>：需要配合大量额外处理才能保证正确的工作（比如循环引用就无法计数器为0，释放回收对象，但实际不算使用）</p>
+</li>
+<li><p>可达性算法    通过一系列称为“GC Roots”的根对象作为起始节点集，从这些节点开始，根据引用关系向下搜索，搜索过程所走过的路径称为“引用链”（Reference Chain），如果某个对象到GC Roots间没有任何引用链相连，或者用图论的话来说就是从GC Roots到这个对象不可达时，则证明此对象是不可能再被使用的。</p>
+<p>GC Roots的对象包括以下几种</p>
+<ul>
+<li>虚拟机栈中引用的对象  比如各个线程被调用方法堆栈中使用到的参数、局部变量、临时变量等。</li>
+<li>在方法区中类静态属性引用的对象</li>
+<li>在方法区中常量引用的对象，譬如字符串常量池里的引用</li>
+<li>本地方法栈中JNI引用的对象（也就是native方法引用的对象）</li>
+<li>java虚拟机内部的引用：如基本数据类型对应的class对象，一些常驻的异常对象（NullPointException，OutOfMemoryError）等，还有，系统类加载器</li>
+<li>所有被同步锁（synchronized关键字）持有的对象 </li>
+<li>反映java虚拟机内部情况的JMXBean、JVMTI中注册的回调、本地代码缓存等</li>
+</ul>
+</li>
+<li><p>引用类型分类</p>
+<ul>
+<li>强引用  指在程序代码之中普遍存在的引用赋值，即类似Object obj=newObject()   只要强引用关系还存在，垃圾收集器就永远不会回收掉被引用的对象</li>
+<li>软引用：用来描述一些还有用，但非必须的对象。只被软引用关联着的对象，会在即将内存溢出时，先将这些对象列进回收列表中，进行第二次回收，如果还不够才抛出异常</li>
+<li>弱引用：用来描述那些非必须对象，他的引用强度比软引用更弱。被弱引用关联的对象，在下一次垃圾收集发生则无论内存是否足够都进行回收</li>
+<li>虚引用：最弱的一种引用关系。一个对象是否有虚引用的存在，完全不会对其生存时间构成影响，也无法通过虚引用来取得一个对象实例。为一个对象设置虚引用关联的唯一目的只是为了能在这个对象被收集器回收时收到一个系统通知。</li>
+</ul>
+</li>
+<li><p>对象的自我救赎    finalize()  （现在已经放弃，最好别用了）</p>
+</li>
+<li><p>方法区的回收</p>
+<ul>
+<li>废弃的常量回收   常量池中其他类(接口)、方法、字符的符号引用、常量，虚拟机判断没有对其的引用，就会清理出常量池</li>
+<li>不再使用的类型回收   需要满足下面的3个条件<ul>
+<li>该类所有的实例都已经被回收，也就是Java堆中不存在该类及其任何派生子类的实例。</li>
+<li>加载该类的类加载器已经被回收，这个条件除非是经过精心设计的可替换类加载器的场景，如OSGi、JSP的重加载等，否则通常是很难达成的。</li>
+<li>该类对应的java.lang.Class对象没有在任何地方被引用，无法在任何地方通过反射访问该类的方法。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="垃圾回收算法"><a href="#垃圾回收算法" class="headerlink" title="垃圾回收算法"></a>垃圾回收算法</h4><ul>
+<li><p>分代收集理论</p>
+<ul>
+<li><p>弱分代假说：绝大数对象都是朝生夕灭的（诞生新生代）</p>
+</li>
+<li><p>强分代假说：熬过越多次垃圾收集过程的对象就越难以消亡（诞生老生代）</p>
+</li>
+<li><p>跨代引用假说：跨代引用相对于同代引用来说仅占极少数（新生代上诞生了记忆集：把老年代划分成若干小块，标识出老年代哪一块内存会存在跨代引用。这样发生Minor GC时，只有包含了跨代引用的小块内存里的对象才会被加入到GC Roots进行扫描，虽然这种方法需要在对象改变引用关系（如将自己或者某个属性赋值）时维护记录数据的正确性，会增加一些运行时的开销，但比起收集时扫描整个老年代来说仍然是划算的。）</p>
+</li>
+</ul>
+</li>
+<li><p>收集分类</p>
+<ul>
+<li><p>部分收集（Partial GC）指不是完整收集整个Java堆的垃圾收集</p>
+<ul>
+<li><p>新生代收集（Minor GC/Young GC） 指目标只是新生代的垃圾收集</p>
+</li>
+<li><p>老年代收集（Major GC/Old GC）指目标只是老年代的垃圾收集（目前只有CMS收集器会有单独）</p>
+</li>
+<li><p>混合收集（Mixed GC）指目标是收集整个新生代以及部分老年代的垃圾收集（目前只有G1收集器会有这种行为）</p>
+<ul>
+<li>整堆收集（Full GC） 收集整个JAVA堆和方法区的垃圾收集</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>收集算法</p>
+<ul>
+<li>标记-清除算法   <ul>
+<li>标记阶段：标记要回收或者要存活的对象</li>
+<li>清除阶段：回收标记回收的对象，或者回收标记了存活对象之外未被标记的对象</li>
+<li>缺点：执行效率不稳定，每次要回收的对象数量不确定。内存空间的碎片化问题</li>
+</ul>
+</li>
+<li>标记-复制算法<ul>
+<li>采用半区复制的算法。将内存空间分割成大小相等的俩部分，每次只使用其中一块，当某一块内存用完，将还存活的对象复制到另一块中，这一块的内存空间直接一次清理掉。</li>
+<li>缺点：空间浪费严重</li>
+</ul>
+</li>
+<li>标记-整理算法<ul>
+<li>其中的标记过程仍然与“标记-清除”算法一样，但后续步骤不是直接对可回收对象进行清理，而是让所有存活的对象都向内存空间一端移动，然后直接清理掉边界以外的内存</li>
+<li>缺点：移动存活对象，如果是老年代这种，每次都有大量对象存活区域，则会是一个极为负重的操作。而且会导致“Stop The World”：对象移动操作必须全程暂停用户应用程序才能进行。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>HoSpot算法细节实现</p>
+<ul>
+<li>根节点枚举  使用一组称为OopMap的数据结构来达到这个目的。一旦类加载动作完成的时候，HotSpot就会把对象内什么偏移量上是什么类型的数据计算出来，在即时编译过程中，也会在<strong>特定的位置</strong>记录下栈里和寄存器里哪些位置是引用。这样收集器在扫描时就可以直接得知这些信息了，并不需要真正一个不漏地从方法区等GC Roots开始查找（待验证）</li>
+<li>安全点 上述的特殊的位置即为安全点，选取标准为“是否具有让程序长时间执行的特征”，用户程序必须在安全点才能够暂停，这样不需要每一条指令都生成对应的OopMap<ul>
+<li>抢先式中断  （淘汰）垃圾收集发生时，中断所有用户线程，如果发现有用户线程中断的地方不在安全点，则恢复这条线程，一会再重新中断，直到跑到最近安全点上。</li>
+<li>主动式中断  当垃圾收集需要中断线程时，仅仅简单的设置一个标志位，各个线程执行过程时会不停地主动去轮询这个标志，一旦发现中断标志为真时就自己再最近的安全点上主动中断挂起。轮询标志的地方和安全点重合，再加上所有创建对象和其他需要再java堆上分配内存的地方，这是为了检测是否即将要发生垃圾收集，避免没有足够内存分配新对象。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>安全区域  指能够确保在某一段代码片段之中，引用关系不会发生变化。因此，在这个区域中任意地方开始垃圾收集都是安全的（存在sleep或者blocked状态的线程，无法响应虚拟机的中断请求，不能再走到安全的地方去中断挂机自己，虚拟机也不可能持续等待线程重新被激活分配处理器时间）   实际使用就是，线程执行进入安全区域时标识自己进入了安全区域。当线程要离开时，要检查虚拟机是否已经完成了类似于根节点枚举这样的暂停用户线程阶段，完成了继续执行，没有则等待完成信号。</p>
+</li>
+<li><p>记忆集与卡表</p>
+<ul>
+<li>记忆集是一种用于记录从非收集区域指向收集区域的指针集合的抽象数据结构</li>
+<li>卡表是记忆集的一种实现方式，HotSpot采用字节数组的方式，其中每一个元素对应着其标识的内存区域中一块特定大小的内存块，称之为卡页。一个卡页内通常包含不只一个对象。当存在跨代指针时，卡表的数组元素即卡页标识为1，称这个元素变脏，当垃圾收集发生时，就取出变脏的卡页，加入GC Roots中一并扫描。</li>
+</ul>
+</li>
+<li><p>写屏障</p>
+<ul>
+<li>将卡表元素变脏的方式。用Aop通知的形式。</li>
+<li>更新时的<strong>伪共享问题</strong>，参数-XX：+UseCondCardMark控制是否在更新卡表的时候，增加一个条件判断。如果当前要更新的缓存行已经被标记为变脏则不在去更新。</li>
+</ul>
+</li>
+<li><p>并发的可达性分析</p>
+<ul>
+<li>采用三色标记，作为工具辅助推到，把遍历对象图过程中遇到的对象，按照“是否访问过”标记成三种颜色<ul>
+<li>白色 表示对象尚未被垃圾收集器访问过。</li>
+<li>黑色 表示对象已经被垃圾收集器访问过，且这个对象的所有引用都已经扫描过。</li>
+<li>灰色 表示对象已经被垃圾收集器访问过，但这个对象上至少存在一个引用还没有被扫描过。</li>
+</ul>
+</li>
+<li>对象消失问题<ul>
+<li>赋值器插入了一条或多条从黑色对象到白色对象的新引用；采用增量更新解决：当黑色对象插入新的指向白色对象的引用关系时，就将这个新插入的引用记录下来，等并发扫描结束之后，再将这些记录过的引用关系中的黑色对象为根，重新扫描一次。这可以简化理解为，黑色对象一旦新插入了指向白色对象的引用之后，它就变回灰色对象了。</li>
+<li>赋值器删除了全部从灰色对象到该白色对象的直接或间接引用。采用原始快照解决:当灰色对象要删除指向白色对象的引用关系时，就将这个要删除的引用记录下来，在并发扫描结束之后，再将这些记录过的引用关系中的灰色对象为根，重新扫描一次。这也可以简化理解为，无论引用关系删除与否，都会按照刚刚开始扫描那一刻的对象图快照来进行搜索。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="垃圾收集器"><a href="#垃圾收集器" class="headerlink" title="垃圾收集器"></a>垃圾收集器</h4><ul>
+<li><p>Serial收集器 新生代收集器   标记整理算法 单线程工作的收集器，HotSpot默认的新生代收集器</p>
+<ul>
+<li>进行垃圾收集时，必须暂停其他所有工作线程（stop the world）</li>
+<li>优点：简单高效，额外内存消耗最小，对于单核处理器或处理器核心数较少的环境来说，Serial收集器由于没有线程交互的开销，专心做垃圾收集自然可以获得最高的单线程收集效率。</li>
+</ul>
+</li>
+<li><p>ParNew收集器  新生代收集器 标记整理算法  支持多线程并行收集，其他与Serial收集器相比并没有太多创新之处。另外主要是因为除了Serial只有它能和CMS配合使用</p>
+</li>
+<li><p>Parallel Scavenge收集器  新生代收集器  基于标记-复制算法 ，该收集器的目标是达到一个可控制的吞吐量（运行用户代码时间/（运行用户代码时间+运行垃圾收集时间））</p>
+<ul>
+<li>-XX：MaxGCPauseMillis参数 控制最大垃圾收集停顿时间</li>
+<li>-XX：GCTimeRatio参数 直接设置吞吐量大小</li>
+<li>-XX：+UseAdaptiveSizePolicy  启动开关，启动后，虚拟机会根据当前系统的运行情况收集性能监控信息，动态调整这些参数以提供最合适的停顿时间或者最大的吞吐量</li>
+</ul>
+</li>
+<li><p>Serial Old收集器   老年代收集器   标记整理算法   单线程   Serial的老年代版本</p>
+</li>
+<li><p>Parallel Old收集器   老年代收集器  标记复制算法  多线程  Parallel Scavenge老年代版本</p>
+</li>
+<li><p>CMS收集器  标记清除算法实现，老年代收集器   该收集器是一种以获取最短回收停顿时间为目标的收集器</p>
+<ul>
+<li>初始标记  标记GC Roots直接关联对象   stop the world</li>
+<li>并发标记   初始标记的直接关联对象，开始遍历整个对象图的过程。    可以与用户线程并发运行  </li>
+<li>重新标记   修正并发标记期间，因用户程序继续运作而导致标记产生变动的那一部分对象的标记记录（比初始标记稍长，远短于并发标记） stop the world</li>
+<li>并发清除 清理删除掉标记阶段判断已经死亡对象   与用户线程同时并发。</li>
+<li>缺点<ul>
+<li>与用户并行时会占用一部分线程导致运行速度变慢</li>
+<li>浮动垃圾：在并发标记和并发清除阶段产生的垃圾对象。所以，CMS需要再运行期间预留内存空间，而当预留的内存无法满足程序分配新对象的需要时，出现一次“并发失败”。这时候虚拟机采用备案，使用Serial Old收集器进行老年代的垃圾收集，stop the world</li>
+<li>内存空间碎片 标记清除算法产生的内存空间碎片，在无法找到足够大的连续空间来分配当前对象时，触发full GC  stop the world</li>
+<li>参数-XX：CMSInitiatingOccu-pancyFraction 可以设置CMS的触发百分比</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Garbage First收集器</p>
+<ul>
+<li>面向整个堆内存任何部分来组成回收集（Mixed GC）</li>
+<li>将堆内存划分为大小相等的独立区域Region。每个独立区域可以根据需要，扮演新生代的Eden空间、Survivor空间，或者老年代空间，<strong>针对不同的Region采用不同的策略处理</strong></li>
+<li>Region中还有一类特殊的Humongous区域，专门用来存储大对象。G1认为只要大小超过了一个Region容量一半的对象即可判定为大对象。而对于超过了整个Region容量的超级大对象，采用N个连续的Humongous Region存储。</li>
+<li>参数-XX：G1HeapRegionSize 设定Region大小</li>
+<li>参数-XX：MaxGCPauseMillis（默认值200ms）设定允许的收集停顿时间</li>
+<li>初始标记   标记一下GC Roots能直接关联到的对象，并且修改TAMS指针的值</li>
+<li>并发标记  从GC Roots中开始对堆中对象进行可达性分析  可以用户程序并发执行。  重新处理SATB记录下的并发是有引用变动的对象</li>
+<li>最终标记  stop the world 处理并发阶段结束后遗留下来的那些少量SATB记录</li>
+<li>筛选回收  负责更新Region的统计数据，对各个Region的回收价值和成本进行排序，根据用户所期望的停顿时间来制定回收计划，可以自由选择任意多个Region构成回收集，然后把决定回收的那一部分Region的存活对象复制到空的Region中，再清理掉整个旧Region的全部空间。这里的操作涉及存活对象的移动，是必须暂停用户线程，由多条收集器线程并行完成的。</li>
+<li>缺点<ul>
+<li>G1的记忆集在存储结构的本质是一种哈希表。由于每一个Region都维护有自己的记忆集，内存占用更大（一般要到java堆容量的10%到20%）</li>
+<li>G1通过原始快照算法（SATB）实现重新标记  程序要继续运行就肯定会持续有新对象被创建，G1为每一个Region设计了两个名为TAMS（Top at Mark Start）的指针，把Region中的一部分空间划分出来用于并发回收过程中的新对象分配，并发回收时新分配的对象地址都必须要在这两个指针位置以上。G1收集器默认在这个地址以上的对象是被隐式标记过的，即默认它们是存活的，不纳入回收范围</li>
+<li>G1收集器的停顿预测模型是以衰减均值（Decaying Average）为理论基础来实现的，在垃圾收集过程中，G1收集器会记录每个Region的回收耗时、每个Region记忆集里的脏卡数量等各个可测量的步骤花费的成本，并分析得出平均值、标准偏差、置信度等统计信息。这里强调的“衰减平均值”是指它会比普通的平均值更容易受到新数据的影响，平均值代表整体平均状态，但衰减平均值更准确地代表“最近的”平均状态。换句话说，Region的统计状态越新越能决定其回收的价值。然后通过这些信息预测现在开始回收的话，由哪些Region组成回收集才可以在不超过期望停顿时间的约束下获得最高的收益。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Shenandoah收集器  G1的下一代升级版</p>
+<ul>
+<li>改进：<ul>
+<li>支持并发整理</li>
+<li>默认不使用分代收集</li>
+<li>将G1中的记忆集更改为连接矩阵。Region N引用Region M则N行M列打上一个标记</li>
+</ul>
+</li>
+<li>初始标记   标记与GC Roots直接关联的对象  会stop the world 但是停顿时间与堆大小无关，只与GC Roots数量有关</li>
+<li>并发标记  与G1一样，遍历对象图，标记出全部可达的对象。与用户线程一起并发。时间长短取决于堆中存活数量以及对象图的结构复杂程度。  并发执行</li>
+<li>最终标记  与G1一样，处理剩余的SATB扫描，并在这个阶段统计出回收价值最高的Region，将其构成一组回收集。   短暂 stop the world</li>
+<li>并发清理  清理那些整个区域连一个存活对象都没有找到的Region    并发执行</li>
+<li>并发回收  Shenandoah回收器的核心差异点。这个阶段，回收集里面的存活对象先复制一份到其他未使用的Region之中，采用读屏障（存在新对象复制，旧对象写入，转发指针改变的并发问题，采用读屏障解决）和Brooks Pointers的转发指针（就是直接多了一步转发，对象都指向转发地址，只需要改转发地址就可以）来解决并发阶段的困难 时间长短取决于回收集的大小  并发执行 </li>
+<li>初始引用更新   只是建立一个线程集合点确保上一个阶段对象移动任务已经完成   stop the world</li>
+<li>并发引用更新  进行引用更新操作，只需要按照内存物理地址的顺序，线性地搜索出引用类型，将旧对象的引用地址修正到新对象引用地址。    时间长短取决于内存中涉及的引用数量的多少。 并发执行</li>
+<li>最终引用更新  解决了堆中的引用更新后，还要修正存在于GC Roots中的引用。  停顿时间与GC Roots数量有关    stop the world</li>
+<li>并发清理  调用一次并发清理过程来回收这些Region的内存空间，供以后新对象分配使用。</li>
+</ul>
+</li>
+<li><p>ZGC收集器   基于Region内存布局的，（暂时）不设分代，使用读屏障、染色指针和内存多重映射等技术来实现的<strong>可并发标记-整理算法</strong>，以低延迟为首要目标的一款垃圾收集器。</p>
+<ul>
+<li>Region具有动态性：动态创建和销毁，以及动态的区域容量大小。<ul>
+<li>小型Region    容量固定为2MB，用于放置小于256KB的小对象</li>
+<li>中型Region   容量固定为32MB，用于放置大于等于256KB但小于4MB的对象</li>
+<li>大型Region   容量不固定，可以动态变化，但必须为2MB的整数倍，用于放置4MB或以上的大对象。一个大型Region中只会存放一个大对象。所以可能大型的Region的容量小于中型Region</li>
+</ul>
+</li>
+<li>染色指针  直接将少量额外信息存储在指针上   通过4个标志信息，可以看到其引用对象的三色标记状态、是否进入了重分配集（即被移动过）、是否只能够通过finalize（）方法才能被访问<ul>
+<li>一旦某个Region存活对象被移动走后，能够立即释放这个Region并重用（Shenandoah在极端情况下要1:1才行）</li>
+<li>大幅度降低内存屏障的使用数量。</li>
+<li>是一种可扩展的存储结构，可以记录更多与对象标记、重定位过程相关数据，以便日后进一步提高性能。</li>
+</ul>
+</li>
+<li>初始标记   初始化GC Roots      stop the world</li>
+<li>并发标记  遍历对象图做可达性分析（初始，并发，最终）初始和最终也会短暂停顿。不同的是，ZGC的标记在染色指针上更新Marked 0、Marked 1标志位</li>
+<li>并发预备重分配   ZGC划分Region，但是其目的不是为了像G1那样做收益优先的增量回收。相反，ZGC每次会扫描所有的Region（用扫描成本省去G1中的记忆集维护成本）因此，ZGC的重分配集只是决定了里面的存活对象会被重新复制到其他的Region中，里面的Region会被释放，而并不能说回收行为就只是针对这个集合里面的Region进行，因为标记过程是针对全堆的。此外，在JDK 12的ZGC中开始支持的类卸载以及弱引用的处理，也是在这个阶段中完成的。</li>
+<li>并发重分配   ZGC核心阶段：这个过程要把重分配集中的存活对象复制到新的Region上，并为重分配集中的每个Region维护一个转发表（ForwardTable），记录从旧对象到新对象的转向关系（指针自愈：得益于染色指针的支持，ZGC收集器能仅从引用上就明确得知一个对象是否处于重分配集之中，如果用户线程此时并发访问了位于重分配集中的对象，这次访问将会被预置的内存屏障所截获，然后立即根据Region上的转发表记录将访问转发到新复制的对象上，并同时修正更新该引用的值，使其直接指向新对象）因为指针自愈的关系，不需要像Shenandoah的Brooks转发指针每次都转，只有第一次访问旧对象才会。</li>
+<li>并发重映射：重映射所做的就是修正整个堆中指向重分配集中旧对象的所有引用，不同于Shenandoah的迫切，因为自愈特性，ZGC将其放在了下一次垃圾回收的并发标记阶段去执行，省去了一次遍历对象图的开销。</li>
+<li>缺点：对象产生速率太快的情况下，<strong>因为没有采用分代</strong>，导致浮动垃圾越来越多，堆中剩余可腾挪的空间就越来越小</li>
+</ul>
+</li>
+<li><p>对象的分配</p>
+<ul>
+<li>对象优先在Eden区中分配，当Eden区没有足够空间进行分配时，进行一次minor GC  <ul>
+<li>-XX：Survivor-Ratio=8  设置eden和一个survivor区容量对比</li>
+<li>-Xms20M   java堆大小为20MB</li>
+<li>-Xmx20M 20=20 所以是设置堆不可扩展</li>
+<li>-Xmn10M 新生代10MB</li>
+</ul>
+</li>
+<li>大对象直接进入老年代（最典型的大对象是很长的字符串，或者元素数量很庞大的数组）<ul>
+<li>-XX：PretenureSizeThreshold=3M 可以设置多大算大对象，这里大于3M在老年代创建对象（只针对Serial和PerNew俩款新生代收集器有效）</li>
+</ul>
+</li>
+<li>长期存活的对象将进入老年代（分代收集）<ul>
+<li>虚拟机给每个对象定义一个对象年龄计数器 Age，存储在对象头中。当对象在Eden区中诞生，经历过一次Minor GC并存活，且能被Survivor容纳，则进入Survivor，age设置为1，每进来一次Minor GC年长一岁，经历过设置的晋升老年代的阈值（默认15），则进入老年代。</li>
+<li>-XX：MaxTenuringThreshold 设置晋升阈值</li>
+</ul>
+</li>
+<li>动态对象年龄判断<ul>
+<li>如果在Survivor空间中相同年龄所有对象大小的总和大于Survivor空间的一半，年龄大于或等于该年龄的对象直接进入老年代</li>
+</ul>
+</li>
+<li>空间分配担保（JDK6 之后参数无效，一定会担保）<ul>
+<li>发生Minor GC之前，虚拟机必须检查老年代最大可用连续空间是否大于新生代所有对象的总空间，如果条件成立，则执行，不成立则虚拟机检查XX：HandlePromotionFailure参数的设置值是否允许担保失败；如果允许，那会继续检查老年代最大可用连续空间是否大于历次晋升到老年代对象平均大小，大于则尝试进行一次Minor GC，小于，或者该参数设置不允许冒险，则改为进行一次Full GC</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="4、虚拟机辅助工具"><a href="#4、虚拟机辅助工具" class="headerlink" title="4、虚拟机辅助工具"></a>4、虚拟机辅助工具</h3><h4 id="Java虚拟机自带命令行工具（一些基本工具，其余使用过程中需要再学）"><a href="#Java虚拟机自带命令行工具（一些基本工具，其余使用过程中需要再学）" class="headerlink" title="Java虚拟机自带命令行工具（一些基本工具，其余使用过程中需要再学）"></a>Java虚拟机自带命令行工具（一些基本工具，其余使用过程中需要再学）</h4><ul>
+<li><p>jps：虚拟机进程状况工具</p>
+<ul>
+<li><p>jps [options] [hostid] （windows需要到jps所在路径下执行）   列出正在运行的虚拟机进程，并显示虚拟机执行主类名称以及这些进程的本地虚拟机唯一ID。（使用哪个虚拟机进程的hostid说明在操作哪个虚拟机）</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-q</td>
+<td>只输出LVMID，省略主类的名称</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>输出虚拟机进程启动时传递给主类main（）函数的参数</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>输出主类的全名，如果进程执行的是jar包，则输出jar路径</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>输出虚拟机进程启动时的JVM参数</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li><p>jstat：虚拟机统计信息监视工具</p>
+<ul>
+<li><p>jstat  [option vmid [ interval [s|ms] [count] ] (示例  jstat -gc 2764 250 250 表示250ms查一次进程2764垃圾收集状况，一共查询20次)  (当时远程虚拟机进程时vmid格式应当是)    [protocol:] [//] lvmid [@hostname [:port] /servername]  </p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-class</td>
+<td>监视类加载，卸载数量，总空间以及类装载所耗费的时间</td>
+</tr>
+<tr>
+<td>-gc</td>
+<td>监视java堆状况，包括Eden区，2个Survivor区、老年代、永久代等的容量，已用空间，垃圾收集时间合计等信息</td>
+</tr>
+<tr>
+<td>-gccapacity</td>
+<td>监视内容与-gc基本相同，但输出主要关注Java堆各个区域使用到的最大、最小空间</td>
+</tr>
+<tr>
+<td>-gcutil</td>
+<td>监视内容与-gc基本相同，但输出主要关注已使用空间占总空间的百分比</td>
+</tr>
+<tr>
+<td>-gccause</td>
+<td>与-gcutil功能一样，但是会额外输出导致上一次垃圾收集产生的原因</td>
+</tr>
+<tr>
+<td>-gcnew</td>
+<td>监视新生代垃圾收集状况</td>
+</tr>
+<tr>
+<td>-gcnewcapacity</td>
+<td>监视内容与-gcnew基本相同，输出主要关注使用到的最大、最小空间</td>
+</tr>
+<tr>
+<td>-gcold</td>
+<td>监视老年代垃圾收集状况</td>
+</tr>
+<tr>
+<td>-gcoldcapacity</td>
+<td>监视内容与-gcold基本相同，输出主要关注使用到的最大、最小空间</td>
+</tr>
+<tr>
+<td>-gcpermcapacity</td>
+<td>输出永久代使用到的最大、最小空间</td>
+</tr>
+<tr>
+<td>-compiler</td>
+<td>输出即时编译器编译过的方法、耗时等信息</td>
+</tr>
+<tr>
+<td>-printcompilation</td>
+<td>输出已经被即时编译的方法</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+<li><p>jinfo：Java配置信息工具（有部分运行期参数修改数值的能力）</p>
+<ul>
+<li>实时查看和调整虚拟机各项参数。  jinfo [option]  pid  （jinfo -flag CMSInitiatingOccupancyFraction 1444）</li>
+<li>java -XX：+PrintFlagsFinal 查看参数默认值</li>
+</ul>
+</li>
+<li><p>jmap：Java内存映像工具</p>
+<ul>
+<li><p>该命令用于生成堆转储快照，它还可以查询finalize执行队列、Java堆和方法区的详细信息，如空间使用率、当前用的是哪种收集器等。（一般称为heapdump或dump文件）（如果不使用jmap命令，要想获取Java堆转储快照也还有一些比较“暴力”的手段：譬如在第2章中用过的-XX：+HeapDumpOnOutOfMemoryError参数，可以让虚拟机在内存溢出异常出现之后自动生成堆转储快照文件，通过-XX：+HeapDumpOnCtrlBreak参数则可以使用[Ctrl]+[Break]键让虚拟机生成堆转储快照文件，又或者在Linux系统下通过Kill-3命令发送进程退出信号“恐吓”一下虚拟机，也能顺利拿到堆转储快照。）</p>
+</li>
+<li><p>jmap [option] vmid  （示例：jmap -dump：format=b，file=eclipse.bin 3500）</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-dump</td>
+<td>生成Java堆转储快照。格式为-dump：[live,] format=b,file=<filename> ,其中live子参数说明是否只dump出存活的对象</td>
+</tr>
+<tr>
+<td>-finalizerinfo</td>
+<td>显示在f-queue中等待Finalizer线程执行finalize方法的对象，只在linux/Solaris平台下有效</td>
+</tr>
+<tr>
+<td>-heap</td>
+<td>显示Java堆详细信息，如使用哪种回收器、参数配置、分代状况等，只在Linux/Solaris平台下有效</td>
+</tr>
+<tr>
+<td>-histo</td>
+<td>显示堆中对象统计信息，包括类、实例数量、合计容量</td>
+</tr>
+<tr>
+<td>-permstat</td>
+<td>以ClassLoader为统计口径显示永久代内存状态，只在Linux/Solaris平台下有效</td>
+</tr>
+<tr>
+<td>-F</td>
+<td>当虚拟机进程对-dump选项没有响应事，可使用这个选项强制生成dump快照，只在Linux/Solaris平台有效</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+<li><p>jhat：虚拟机堆转储快照分析工具（分析功能相对来说比较简陋，耗费性能所以一般要拷贝到另一台机器进行分析，既然复制了，用其他工具则更好。）</p>
+</li>
+<li><p>jstack ：Java堆栈跟踪工具</p>
+<ul>
+<li><p>用于生成虚拟机当前时刻的线程快照（一般称为threaddump或者javacore文件）。线程快照是当前虚拟机内每一条线程正在执行的方法堆栈的集合，生成线程快照的目的通常是定位线程出现长时间停顿的原因：如线程间死锁、死循环、请求外部资源导致的长时间停顿挂起等</p>
+</li>
+<li><p>从JDK 5起，java.lang.Thread类新增了一个getAllStackTraces()方法用于获取虚拟机中所有线程的StackTraceElement对象。使用这个方法可以通过简单的几行代码完成jstack的大部分功能，在实际项目中不妨调用这个方法做个管理员页面，可以随时使用浏览器来查看线程堆栈</p>
+</li>
+<li><p>jstack [option] vmid</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-F</td>
+<td>当正常输出的请求不被响应时，强制输出线程堆栈</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>除堆栈外，显示关于锁的附加信息</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>如果调用到本地方法的话，可以显示C/C++ 的堆栈</td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="可视化故障处理工具"><a href="#可视化故障处理工具" class="headerlink" title="可视化故障处理工具"></a>可视化故障处理工具</h4><ul>
+<li>JConsole：Java监视与管理控制台  JDk正式成员  免费</li>
+<li>JHSDB：基于服务性代理的调试工具   JDK正式成员 免费</li>
+<li>VisualVM：多合-故障处理工具  独立开源项目 免费</li>
+<li>JMC：可持续在线的监控工具  OpenJDK组织管理开源   收费（需要与HotSpot内部的“飞行记录仪”-JFR配合工作，JFR收费）</li>
+</ul>
+<h4 id="HotSpot虚拟机插件"><a href="#HotSpot虚拟机插件" class="headerlink" title="HotSpot虚拟机插件"></a>HotSpot虚拟机插件</h4><ul>
+<li>HSDIS:JIT生成代码反汇编  可以将即时编译器动态生成的本地代码还原为汇编代码输出，同时还会自动产生大量非常有价值的注释，这样我们就可以通过输出的汇编代码来从最本质的角度分析问题</li>
+</ul>
+<h3 id="5、调优案例分析与实战"><a href="#5、调优案例分析与实战" class="headerlink" title="5、调优案例分析与实战"></a>5、调优案例分析与实战</h3><ul>
+<li><p>大内存硬件程序部署策略（一台大电脑）</p>
+<ul>
+<li>逻辑集群部署（在一台物理机器上启动多个应用服务器进程，为每个服务器进程分配不同端口，然后在前端搭建一个负载均衡器，以反向代理的方式来分配访问请求。使用无Session复制的亲合式集群是一个相当合适的选择。）</li>
+<li>单独java虚拟机（控制Full GC频率，让其在深夜定时执行，避免GC时间过长影响用户使用）</li>
+</ul>
+</li>
+<li><p>集群间同步导致的内存溢出</p>
+<ul>
+<li>全局缓存，在收到正确信息前，发送的信息一直存在内存中保留，在网络传输不满足时，重发数据累计</li>
+</ul>
+</li>
+<li><p>堆外内存导致的溢出错误</p>
+<ul>
+<li>直接内存：可通过-XX：MaxDirectMemorySize调整大小，内存不足时抛出OutOf-MemoryError或者OutOfMemoryError：Direct buffer memory</li>
+<li>线程堆栈：可通过-Xss调整大小，内存不足时抛出StackOverflowError（如果线程请求的栈深度大于虚拟机所允许的深度）或者OutOfMemoryError（如果Java虚拟机栈容量可以动态扩展，当栈扩展时无法申请到足够的内存）。</li>
+<li>Socket缓存区：每个Socket连接都Receive和Send两个缓存区，分别占大约37KB和25KB内存，连接多的话这块内存占用也比较可观。如果无法分配，可能会抛出IOException：Toomany open files异常。</li>
+<li>JNI代码：如果代码中使用了JNI调用本地库，那本地库使用的内存也不在堆中，而是占用Java虚拟机的本地方法栈和本地内存的。</li>
+</ul>
+</li>
+<li><p>外部命令导致系统缓慢</p>
+<ul>
+<li>使用java调用外部shell脚本等会导致创建新的进程，抢占了系统的处理器资源。</li>
+</ul>
+</li>
+<li><p>服务器虚拟机进程奔溃</p>
+<ul>
+<li>与别的系统接口对接，如果对方服务响应时间长，而这边采用同步/异步的方式，会建立大量的Socket连接，最终导致进程奔溃。解决方法：一个是对方系统加快响应，一个是本机系统用消息队列</li>
+</ul>
+</li>
+<li><p>不恰当数据结构导致内存占用过大</p>
+</li>
+<li><p>由windows虚拟内存导致的长时间停顿</p>
+<ul>
+<li>程序最小化后，工作内存被自动交换到磁盘的页面文件之中，这样发生垃圾收集时，就有可能因为恢复页面文件的操作导致不正常的垃圾收集停顿。</li>
+</ul>
+</li>
+<li><p>由安全点导致长时间停顿（在循环中等待进入安全点）</p>
+<ul>
+<li>HotSpot虚拟机为了避免安全点过多带来过重的负担，对循环还有一项优化措施，认为循环次数较少的话，执行时间应该也不会太长，所以使用int类型或范围更小的数据类型作为索引值的循环默认是不会被放置安全点的。这种循环被称为可数循环（CountedLoop），相对应地，使用long或者范围更大的数据类型作为索引值的循环就被称为不可数循环（Uncounted Loop），将会被放置安全点。</li>
+</ul>
+</li>
+</ul>
+<h2 id="虚拟机执行子系统"><a href="#虚拟机执行子系统" class="headerlink" title="虚拟机执行子系统"></a>虚拟机执行子系统</h2><h3 id="1、类文件结构"><a href="#1、类文件结构" class="headerlink" title="1、类文件结构"></a>1、类文件结构</h3><ul>
+<li><p>无符号数  基本的数据类型，以u1、u2、u4、u8来分别代表1个字节、2个字节、4个字节和8个字节的无符号数，无符号数可以用来描述数字、索引引用、数量值或者按照UTF-8编码构成字符串值。</p>
+</li>
+<li><p>表是由多个无符号数或者其他表作为数据项构成的复合数据类型，为了便于区分，所有表的命名都习惯的以”_info”结尾。表用于描述有层次关系的复合结构的数据，整个Class文件本质也可以视作一张表。</p>
+</li>
+<li><p>class文件(在JDK的bin目录中，Oracle公司已经为我们准备好一个专门用于分析Class文件字节码的工具：javap。使用javap工具的-verbose参数输出的TestClass.class文件字节码内容   javap -verbose TestClass)</p>
+<ul>
+<li><p>魔数（Magic Number）头4个字节，用于确定这个文件是否为一个能被虚拟机接受的class文件。（值为0xCAFEEBABE）</p>
+</li>
+<li><p>第5,6位字节是次版本号（Minor Version）第7,8位字节是主版本号（Major Version） Java的版本号从45开始，JDK1.1支持45.0<del>45.65535；JDK1.2支持45.0</del>46.65535；JDK13 45.0~57.65535（关于次版本号，曾经在现代Java（即Java 2）出现前被短暂使用过，JDK 1.0.2支持的版本45.0～45.3（包括45.0～45.3）。JDK 1.1支持版本45.0～45.65535，从JDK 1.2以后，直到JDK12之前次版本号均未使用，全部固定为零。而到了JDK 12时期，由于JDK提供的功能集已经非常庞大，有一些复杂的新特性需要以“公测”的形式放出，所以设计者重新启用了副版本号，将它用于标识“技术预览版”功能特性的支持。如果Class文件中使用了该版本JDK尚未列入正式特性清单中的预览功能，则必须把次版本号标识为65535，以便Java虚拟机在加载类文件时能够区分出来。）</p>
+</li>
+<li><p>常量池：主次版本号之后为其入口。Class文件出现的第一个表类型数据项目，因为其数量不固定，入口放置一项u2类型数据代表常量池容量计数值（constant_pool_count) <strong>这个容量计数从1开始而不是0；比如0x0016对应十进制22，即容量为21</strong>   常量池主要内容是</p>
+<ul>
+<li>字面量（Literal） 字面量比较接近于Java语言层面的常量概念，如文本字符串、被声明为final的常量值等</li>
+<li>符号引用（Symbolic References）<ul>
+<li>被模块导出或者开放的包（Package）</li>
+<li>类和接口的全限定名（Fully Qualified Name）</li>
+<li>字段的名称和描述符（Descriptor）</li>
+<li>方法的名称和描述符</li>
+<li>方法句柄和方法类型（Method Handle、Method Type、Invoke Dynamic）</li>
+<li>动态调用点和动态常量（Dynamically-Computed Call Site、Dynamically-Computed Constant）</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>访问标志（access_flags）：常量池结束之后，紧接着的2个字节。这个标志用于识别一些类或者接口层次的访问信息，包括：这个Class是类还是接口；是否定义为public类型；是否定义为abstract类型；如果是类的话，是否被声明为final；等等</p>
+</li>
+<li><p>类索引、父类索引与接口索引集合</p>
+<p>Class文件中由这三项数据来确定该类型的继承关系</p>
+<ul>
+<li>类索引（this_class） u2类型  类索引用于确定这个类的全限定名</li>
+<li>父类索引（super_class） u2类型 父类索引用于确定这个类的父类的全限定名</li>
+<li>接口索引集合（interfaces）一组u2类型 （入口的第一项u2类型的数据为接口计数器（interfaces_count），表示索引表的容量）  被实现的接口将按implements关键字（如果这个Class文件表示的是一个接口，则应当是extends关键字）后的接口顺序从左到右排列在接口索引集合中。</li>
+</ul>
+</li>
+<li><p>字段表集合  用于描述接口或者类中声明的变量。Java语言中的“字段”（Field）包括类级变量以及实例级变量，但不包括在方法内部声明的局部变量。   包括访问标志（access_flags）、名称索引（name_index）、描述符索引（descriptor_index）、属性表集合（attributes）</p>
+</li>
+<li><p>方法表集合 Class文件存储格式中对方法的描述与对字段的描述采用了几乎完全一致的方式，方法表的结构如同字段表一样。包括访问标志（access_flags）、名称索引（name_index）、描述符索引（descriptor_index）、属性表集合（attributes） <strong><em>方法重载（Overload），除了要求和原方法具有相同的简单名称之外，还需要一个与原方法不同的特征签名</em></strong> java代码层面的特征签名只包括，方法名称、参数顺序及参数类型，而字节码还额外包括方法返回值以及受查异常表。</p>
+</li>
+<li><p>属性表集合（不需要严格的顺序，其他地方需要）</p>
+<ul>
+<li><p>code属性</p>
+<ul>
+<li>max_stack代表了操作数栈（Operand Stack）深度的最大值</li>
+<li>max_locals代表了局部变量表所需的存储空间</li>
+</ul>
+<p><strong><em>在任何实例方法里面，都可以通过“this”关键字访问到此方法所属的对象。这个访问机制对Java程序的编写很重要，而它的实现非常简单，仅仅是通过在Javac编译器编译的时候把对this关键字的访问转变为对一个普通方法参数的访问，然后在虚拟机调用实例方法时自动传入此参数而已。因此在实例方法的局部变量表中至少会存在一个指向当前对象实例的局部变量，局部变量表中也会预留出第一个变量槽位来存放对象实例的引用，所以实例方法参数值从1开始计算。这个处理只对实例方法有效，如果代码清单6-1中的inc()方法被声明为static，那Args_size就不会等于1而是等于0了。</em></strong></p>
+</li>
+<li><p>Exceptions属性  Exceptions属性的作用是列举出方法中可能抛出的受查异常（Checked Excepitons），也就是方法描述时在throws关键字后面列举的异常。(try catch finally 属于异常表)</p>
+</li>
+<li><p>LineNumberTable属性    用于描述Java源码行号与字节码行号（字节码的偏移量）之间的对应关系。它并不是运行时必需的属性，但默认会生成到Class文件之中，可以在Javac中使用-g：none或-g：lines选项来取消或要求生成这项信息。如果选择不生成LineNumberTable属性，对程序运行产生的最主要影响就是当抛出异常时，堆栈中将不会显示出错的行号，并且在调试程序的时候，也无法按照源码行来设置断点</p>
+</li>
+<li><p>LocalVariableTable及LocalVariableTypeTable属性   用于描述栈帧中局部变量表的变量与Java源码中定义的变量之间的关系，它也不是运行时必需的属性，但默认会生成到Class文件之中，可以在Javac中使用-g：none或-g：vars选项来取消或要求生成这项信息。如果没有生成这项属性，最大的影响就是当其他人引用这个方法时，所有的参数名称都将会丢失，譬如IDE将会使用诸如arg0、arg1之类的占位符代替原有的参数名，这对程序运行没有影响，但是会对代码编写带来较大不便，而且在调试期间无法根据参数名称从上下文中获得参数值</p>
+</li>
+<li><p>SourceFile及SourceDebugExtension属性    用于记录生成这个Class文件的源码文件名称。这个属性也是可选的，可以使用Javac的-g：none或-g：source选项来关闭或要求生成这项信息。在Java中，对于大多数的类来说，类名和文件名是一致的，但是有一些特殊情况（如内部类）例外。如果不生成这项属性，当抛出异常时，堆栈中将不会显示出错代码所属的文件名。</p>
+</li>
+<li><p>ConstantValue属性   通知虚拟机自动为静态变量赋值 <a target="_blank" rel="noopener" href="https://www.jianshu.com/p/8a14ed0ed1e9">简书init和clinit对比</a></p>
+<p>对非static类型的变量（也就是实例变量）的赋值是在实例构造器<init>()方法中进行的；而对于类变量，则有两种方式可以选择：在类构造器<clinit>()方法中或者使用ConstantValue属性。目前Oracle公司实现的Javac编译器的选择是，如果同时使用final和static来修饰一个变量（按照习惯，这里称“常量”更贴切），并且这个变量的数据类型是基本类型或者java.lang.String的话，就将会生成ConstantValue属性来进行初始化；如果这个变量没有被final修饰，或者并非基本类型及字符串，则将会选择在<clinit>()方法中进行初始化。</p>
+</li>
+<li><p>InnerClasses属性  用于记录内部类与宿主类之间的关联。如果一个类中定义了内部类，那编译器将会为它以及它所包含的内部类生成InnerClasses属性。</p>
+</li>
+<li><p>Deprecated及Synthetic属性</p>
+<ul>
+<li>Deprecated属性用于表示某个类、字段或者方法，已经被程序作者定为不再推荐使用，它可以通过代码中使用“@deprecated”注解进行设置。</li>
+<li>Synthetic属性代表此字段或者方法并不是由Java源码直接产生的，而是由编译器自行添加的</li>
+</ul>
+</li>
+<li><p>StackMapTable属性   复杂的变长属性，位于code属性的属性表中    这个属性会在虚拟机类加载的字节码验证阶段被新类型检查验证器（Type Checker）使用，目的在于代替以前比较消耗性能的基于数据流分析的类型推导验证器。</p>
+</li>
+<li><p>Signature属性  记录泛型签名信息</p>
+</li>
+<li><p>BootstrapMethods属性  它是一个复杂的变长属性，位于类文件的属性表中。这个属性用于保存invokedynamic指令引用的引导方法限定符</p>
+</li>
+<li><p>MethodParameters属性   变长属性  记录方法的各个形参名称和信息</p>
+</li>
+<li><p>模块化相关属性</p>
+</li>
+<li><p>运行时注解相关属性</p>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2、字节码指令简介"><a href="#2、字节码指令简介" class="headerlink" title="2、字节码指令简介"></a>2、字节码指令简介</h3><ul>
+<li><p>加载和存储指令</p>
+<ul>
+<li>将一个局部变量加载到操作栈：iload、iload_&lt; n&gt;、lload、lload_&lt; n&gt;、fload、fload_&lt; n&gt;、dload、dload_&lt; n&gt;、aload、aload_&lt; n&gt;·</li>
+<li><em>将一个数值从操作数栈存储到局部变量表：istore、istore</em>&lt; n&gt;、lstore、lstore_&lt; n&gt;、fstore、fstore_&lt; n&gt;、dstore、dstore_&lt; n&gt;、astore、astore_&lt; n&gt;</li>
+<li>将一个常量加载到操作数栈：bipush、sipush、ldc、ldc_w、ldc2_w、aconst_null、iconst_m1、iconst_&lt; i&gt;、lconst_&lt; l&gt;、fconst_&lt; f&gt;、dconst_&lt; d&gt;</li>
+<li>扩充局部变量表的访问索引的指令：wide</li>
+</ul>
+</li>
+<li><p>运算指令</p>
+<ul>
+<li>加法指令：iadd、ladd、fadd、dadd</li>
+<li>减法指令：isub、lsub、fsub、dsub</li>
+<li>乘法指令：imul、lmul、fmul、dmul</li>
+<li>除法指令：idiv、ldiv、fdiv、ddiv</li>
+<li>求余指令：irem、lrem、frem、drem</li>
+<li>取反指令：ineg、lneg、fneg、dneg</li>
+<li>位移指令：ishl、ishr、iushr、lshl、lshr、lushr</li>
+<li>按位或指令：ior、lor·按位与指令：iand、land</li>
+<li>按位异或指令：ixor、lxor</li>
+<li>局部变量自增指令：iinc</li>
+<li>比较指令：dcmpg、dcmpl、fcmpg、fcmpl、lcmp</li>
+</ul>
+</li>
+<li><p>类型转换指令</p>
+</li>
+<li><p>窄化类型转换 i2b、i2c、i2s、l2i、f2i、f2l、d2i、d2l和d2f</p>
+</li>
+<li><p>对象创建与访问指令</p>
+<ul>
+<li>创建类实例的指令：new</li>
+<li>创建数组的指令：newarray、anewarray、multianewarray</li>
+<li>访问类字段（static字段，或者称为类变量）和实例字段（非static字段，或者称为实例变量）的指令：getfield、putfield、getstatic、putstatic</li>
+<li>把一个数组元素加载到操作数栈的指令：baload、caload、saload、iaload、laload、faload、daload、aaload</li>
+<li>将一个操作数栈的值储存到数组元素中的指令：bastore、castore、sastore、iastore、fastore、dastore、aastore</li>
+<li>取数组长度的指令：arraylength</li>
+<li>检查类实例类型的指令：instanceof、checkcast</li>
+</ul>
+</li>
+<li><p>操作数栈管理指令</p>
+<ul>
+<li>将操作数栈的栈顶一个或两个元素出栈：pop、pop2</li>
+<li>复制栈顶一个或两个数值并将复制值或双份的复制值重新压入栈顶：dup、dup2、dup_x1、dup2_x1、dup_x2、dup2_x2</li>
+<li>将栈最顶端的两个数值互换：swap</li>
+</ul>
+</li>
+<li><p>控制转移指令</p>
+<ul>
+<li>条件分支：ifeq、iflt、ifle、ifne、ifgt、ifge、ifnull、ifnonnull、if_icmpeq、if_icmpne、if_icmplt、if_icmpgt、if_icmple、if_icmpge、if_acmpeq和if_acmpne</li>
+<li>复合条件分支：tableswitch、lookupswitch</li>
+<li>无条件分支：goto、goto_w、jsr、jsr_w、ret</li>
+</ul>
+</li>
+<li><p>方法调用和返回指令（方法调用指令与数据类型无关，而方法返回指令是根据返回值的类型区分的）</p>
+<ul>
+<li>invokevirtual指令：用于调用对象的实例方法，根据对象的实际类型进行分派（虚方法分派），这也是Java语言中最常见的方法分派方式。</li>
+<li>invokeinterface指令：用于调用接口方法，它会在运行时搜索一个实现了这个接口方法的对象，找出适合的方法进行调用。</li>
+<li>invokespecial指令：用于调用一些需要特殊处理的实例方法，包括实例初始化方法、私有方法和父类方法。</li>
+<li>invokestatic指令：用于调用类静态方法（static方法）。</li>
+<li>invokedynamic指令：用于在运行时动态解析出调用点限定符所引用的方法。并执行该方法。前面四条调用指令的分派逻辑都固化在Java虚拟机内部，用户无法改变，而invokedynamic指令的分派逻辑是由用户所设定的引导方法决定的。</li>
+</ul>
+<p>返回指令：</p>
+<ul>
+<li>ireturn（当返回值是boolean、byte、char、short和int类型时使用）、lreturn、freturn、dreturn和areturn</li>
+</ul>
+</li>
+<li><p>异常处理指令</p>
+<ul>
+<li>athrow：显示抛出异常的操作（throw语句）</li>
+<li>一些虚拟机自己定义的异常状况：idiv或ldiv指令。抛出ArithmeticException异常</li>
+</ul>
+</li>
+<li><p>同步指令（锁）</p>
+<ul>
+<li>方法级  方法级的同步是隐式的，无须通过字节码指令来控制，它实现在方法调用和返回操作之中。虚拟机可以从方法常量池中的方法表结构中的ACC_SYNCHRONIZED访问标志得知一个方法是否被声明为同步方法。当方法调用时，调用指令将会检查方法的ACC_SYNCHRONIZED访问标志是否被设置，如果设置了，执行线程就要求先成功持有管程，然后才能执行方法，最后当方法完成（无论是正常完成还是非正常完成）时释放管程。在方法执行期间，执行线程持有了管程，其他任何线程都无法再获取到同一个管程。如果一个同步方法执行期间抛出了异常，并且在方法内部无法处理此异常，那这个同步方法所持有的管程将在异常抛到同步方法边界之外时自动释放。</li>
+<li>代码块  同步一段指令集序列通常是由Java语言中的synchronized语句块来表示的，Java虚拟机的指令集中有<strong>monitorenter</strong>和<strong>monitorexit</strong>两条指令来支持synchronized关键字的语义，正确实现synchronized关键字需要Javac编译器与Java虚拟机两者共同协作支持</li>
+</ul>
+</li>
+</ul>
+<h3 id="3、类加载机制"><a href="#3、类加载机制" class="headerlink" title="3、类加载机制"></a>3、类加载机制</h3><p>Java天生可以动态扩展的语言特性就是依赖运行期动态加载和动态连接这个特点实现的</p>
+<h4 id="类加载时机"><a href="#类加载时机" class="headerlink" title="类加载时机"></a>类加载时机</h4><ul>
+<li><p>加载（Loading）</p>
+<ul>
+<li>通过一个类的全限定名来获取定义此类的二进制字节流</li>
+<li>将这个字节流所代表的静态存储结构转化为方法区的运行时数据结构</li>
+<li>在内存中生成一个代表这个类的java.lang.Class对象，作为方法区这个类的各种数据的访问入口</li>
+</ul>
+</li>
+<li><p>连接（Linking）（加载阶段优先于连接阶段，但是会有部分交叉在加载阶段进行执行）</p>
+<ul>
+<li><p>验证（Verification）</p>
+<ul>
+<li><p>文件格式验证  如之前的版本号，魔数开头，文件本身或各个部分是否有被删除或者附加其他信息；<strong>目的</strong>：保证输入的字节流能正确地解析并存储于方法区之内，格式上符合描述一个Java类型信息的要求。这阶段的验证是基于二进制字节流进行的，只有通过了这个阶段的验证之后，这段字节流才被允许进入Java虚拟机内存的方法区中进行存储，所以后面的三个验证阶段全部是基于方法区的存储结构上进行的，不会再直接读取、操作字节流了。</p>
+</li>
+<li><p>元数据验证    这个类的父类是否继承了不允许被继承的类；如果这个类不是抽象类，是否实现了其父类或接口之中要求实现的所有方法。等等</p>
+<p><strong>目的</strong>：对类的元数据信息进行语义校验，保证不存在与《Java语言规范》定义相悖的元数据信息。</p>
+</li>
+<li><p>字节码验证  对类的方法体（Class文件中的Code属性）进行校验分析，保证被校验类的方法在运行时不会做出危害虚拟机安全的行为，例如：保证任何跳转指令都不会跳转到方法体以外的字节码指令上</p>
+<p><strong>目的</strong>：通过数据流分析和控制力分析，确定程序语义是合法的、符合逻辑的。</p>
+</li>
+<li><p>符合引用验证（这是验证第4阶段，一般在解析阶段进行）  通俗来说就是，该类是否缺少或者被禁止访问它依赖的某些外部类、方法、字段等资源。例如 在指定类中是否存在符合方法的字段描述符及简单名称所描述的方法和字段。对应java.lang.NoSuchFieldError、java.lang.NoSuchMethodError</p>
+</li>
+</ul>
+</li>
+</ul>
+<p><strong>目的</strong>  符号引用验证可以看作是对类自身以外（常量池中的各种符号引用）的各类信息进行匹配性校验。</p>
+<ul>
+<li><p>准备（Preparation）为类中定义的变量（即静态变量，被static修饰的变量）分配内存并设置类变量初始值的阶段。（这个时候的变量赋值为0，真正初始化在<clinit>方法；如果类字段的字段属性表中存在ConstantValue属性，那在准备阶段变量值就会被初始化为ConstantValue属性所指定的初始值例如：public static final int value=123）</p>
+</li>
+<li><p>解析（Resolution）</p>
+<ul>
+<li>符号引用 符号引用以一组符号来描述所引用的目标，符号可以是任何形式的字面量，只要使用时能无歧义地定位到目标即可。符号引用与虚拟机实现的内存布局无关，引用的目标并不一定是已经加载到虚拟机内存当中的内容。各种虚拟机实现的内存布局可以各不相同，但是它们能接受的符号引用必须都是一致的，因为符号引用的字面量形式明确定义在《Java虚拟机规范》的Class文件格式中。</li>
+<li>直接引用  直接引用是可以直接指向目标的指针、相对偏移量或者是一个能间接定位到目标的句柄。直接引用是和虚拟机实现的内存布局直接相关的，同一个符号引用在不同虚拟机实例上翻译出来的直接引用一般不会相同。如果有了直接引用，那引用的目标必定已经在虚拟机的内存中存在。</li>
+<li>类解析<ul>
+<li>假设在D类中加载C类，如果C不是一个数组类型，则将全限定名传给D之后进行各种验证</li>
+<li>如果C是数组类型，如果是对象数组。重复步骤1，如果不是，由虚拟机生成一个代表该数组维度和元素的数组对象。</li>
+<li>上述俩步没问题，则进行最后的权限验证。如果不具备访问权限，抛出java.lang.illegalAccessError异常（由于jdk1.9模块的引入导致public类也存在权限问题）</li>
+</ul>
+</li>
+<li>字段解析<ul>
+<li>如果C本身就包含了简单名称和字段描述符都与目标相匹配的字段，则返回这个字段的直接引用，查找结束。</li>
+<li>否则，如果在C中实现了接口，将会按照继承关系从下往上递归搜索各个接口和它的父接口，如果接口中包含了简单名称和字段描述符都与目标相匹配的字段，则返回这个字段的直接引用，查找结束。</li>
+<li>否则，如果C不是java.lang.Object的话，将会按照继承关系从下往上递归搜索其父类，如果在父类中包含了简单名称和字段描述符都与目标相匹配的字段，则返回这个字段的直接引用，查找结束。</li>
+<li>否则，查找失败，抛出java.lang.NoSuchFieldError异常。</li>
+<li>将会对这个字段进行权限验证，如果发现不具备对字段的访问权限，将抛出java.lang.IllegalAccessError异常。</li>
+</ul>
+</li>
+<li>方法解析<ul>
+<li>由于Class文件格式中类的方法和接口的方法符号引用的常量类型定义是分开的，如果在类的方法表中发现class_index中索引的C是个接口的话，那就直接抛出java.lang.IncompatibleClassChangeError异常。</li>
+<li>如果通过了第一步，在类C中查找是否有简单名称和描述符都与目标相匹配的方法，如果有则返回这个方法的直接引用，查找结束。</li>
+<li>否则，在类C的父类中递归查找是否有简单名称和描述符都与目标相匹配的方法，如果有则返回这个方法的直接引用，查找结束。</li>
+<li>否则，在类C实现的接口列表及它们的父接口之中递归查找是否有简单名称和描述符都与目标相匹配的方法，如果存在匹配的方法，说明类C是一个抽象类，这时候查找结束，抛出java.lang.AbstractMethodError异常。</li>
+<li>否则，宣告方法查找失败，抛出java.lang.NoSuchMethodError。</li>
+<li>最后，如果查找过程成功返回了直接引用，将会对这个方法进行权限验证，如果发现不具备对此方法的访问权限，将抛出java.lang.IllegalAccessError异常。</li>
+</ul>
+</li>
+<li>接口解析<ul>
+<li>与类的方法解析相反，如果在接口方法表中发现class_index中的索引C是个类而不是接口，那么就直接抛出java.lang.IncompatibleClassChangeError异常。</li>
+<li>否则，在接口C中查找是否有简单名称和描述符都与目标相匹配的方法，如果有则返回这个方法的直接引用，查找结束。</li>
+<li>否则，在接口C的父接口中递归查找，直到java.lang.Object类（接口方法的查找范围也会包括Object类中的方法）为止，看是否有简单名称和描述符都与目标相匹配的方法，如果有则返回这个方法的直接引用，查找结束。</li>
+<li>对于规则3，由于Java的接口允许多重继承，如果C的不同父接口中存有多个简单名称和描述符都与目标相匹配的方法，那将会从这多个方法中返回其中一个并结束查找，《Java虚拟机规范》中并没有进一步规则约束应该返回哪一个接口方法。但与之前字段查找类似地，不同发行商实现的Javac编译器有可能会按照更严格的约束拒绝编译这种代码来避免不确定性。</li>
+<li>否则，宣告方法查找失败，抛出java.lang.NoSuchMethodError异常。</li>
+<li>在JDK 9之前，Java接口中的所有方法都默认是public的，也没有模块化的访问约束，所以不存在访问权限的问题，接口方法的符号解析就不可能抛出java.lang.IllegalAccessError异常。但在JDK 9中增加了接口的静态私有方法，也有了模块化的访问约束，所以从JDK 9起，接口方法的访问也完全有可能因访问权限控制而出现java.lang.IllegalAccessError异常。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>初始化（Initialization）（有且只有下列6种情况）</p>
+<ul>
+<li>遇到new、getstatic、putstatic或invokestatic这四条字节码指令时，如果类型没有进行过初始化，则需要先触发其初始化阶段。（对应的java代码场景：使用new关键字实例化对象的时候、读取或设置一个类型的静态字段（被final修饰、已在编译期把结果放入常量池的静态字段除外）的时候、调用一个类型的静态方法的时候）</li>
+<li>使用java.lang.reflect包的方法对类型进行反射调用的时候，如果类型没有进行过初始化，则需要先触发其初始化</li>
+<li>当初始化类的时候，如果发现其父类还没有初始化，则需要先触发其父类的初始化（接口不需要，只有在真的用到父接口时初始化）</li>
+<li>虚拟机启动时，用户指定的一个要执行的主类（main方法那个类），虚拟机会先初始化这个主类</li>
+<li>当使用JDK 7新加入的动态语言支持时，如果一个java.lang.invoke.MethodHandle实例最后的解析结果为REF_getStatic、REF_putStatic、REF_invokeStatic、REF_newInvokeSpecial四种类型的方法句柄，并且这个方法句柄对应的类没有进行过初始化，则需要先触发其初始化</li>
+<li>当一个接口中定义了JDK 8新加入的默认方法（被default关键字修饰的接口方法）时，如果有这个接口的实现类发生了初始化，那该接口要在其之前被初始化。</li>
+<li><clinit>   （没有静态变量和语句块，没有该方法）<ul>
+<li>编译器收集的顺序是由语句在源文件中出现的顺序决定的，静态语句块中只能访问到定义在静态语句块之前的静态变量，定义在它之后的变量，在前面的静态语句块可以赋值，但是不能访问</li>
+<li><clinit>()方法与类的构造函数（即在虚拟机视角中的实例构造器<init>()方法）不同，它不需要显式地调用父类构造器，Java虚拟机会保证在子类的<clinit>()方法执行前，父类的<clinit>()方法已经执行完毕。因此在Java虚拟机中第一个被执行的<clinit>()方法的类型肯定是Object类。所以这也意味着父类中定义的静态语句块优先于子类的变量赋值操作。</li>
+<li>接口中不能使用静态语句块，但仍然有变量初始化的赋值操作，因此接口与类一样都会生成<clinit>()方法。但接口与类不同的是，执行接口的<clinit>()方法不需要先执行父接口的<clinit>()方法，因为只有当父接口中定义的变量被使用时，父接口才会被初始化。此外，接口的实现类在初始化时也一样不会执行接口的<clinit>()方法。</li>
+<li>Java虚拟机必须保证一个类的<clinit>()方法在多线程环境中被正确地加锁同步，如果多个线程同时去初始化一个类，那么只会有其中一个线程去执行这个类的<clinit>()方法，其他线程都需要阻塞等待，直到活动线程执行完毕<clinit>()方法。如果在一个类的<clinit>()方法中有耗时很长的操作，那就可能造成多个进程阻塞</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>使用（Using）</p>
+</li>
+<li><p>卸载（Unloading）</p>
+</li>
+</ul>
+<h4 id="类加载器"><a href="#类加载器" class="headerlink" title="类加载器"></a>类加载器</h4><ul>
+<li><p>类加载器 （判断俩个对象是否是同一个，一定要用同一个类加载器）</p>
+<ul>
+<li>自定义类加载器</li>
+<li>启动类加载器 类加载器负责加载存放在<JAVA_HOME>\lib目录，或者被-Xbootclasspath参数所指定的路径中存放的，而且是Java虚拟机能够识别的（按照文件名识别，如rt.jar、tools.jar，名字不符合的类库即使放在lib目录中也不会被加载）类库加载到虚拟机的内存中</li>
+<li>扩展类加载器  这个类加载器是在类sun.misc.Launcher$ExtClassLoader中以Java代码的形式实现的。它负责加载<JAVA_HOME>\lib\ext目录中，或者被java.ext.dirs系统变量所指定的路径中所有的类库。</li>
+<li>应用程序类加载器  这个类加载器由sun.misc.Launcher$AppClassLoader来实现。由于应用程序类加载器是ClassLoader类中的getSystem-ClassLoader()方法的返回值，所以有些场合中也称它为“系统类加载器”。它负责加载用户类路径（ClassPath）上所有的类库，开发者同样可以直接在代码中使用这个类加载器</li>
+</ul>
+</li>
+<li><p>双亲委派模型  （为了使所有的类加载转接到同一个父类上，保证是同一个对象）</p>
+<ul>
+<li><p>原理  要求除了顶层的启动类加载器外，其余的类加载器都应有自己的父类加载器。不过这里类加载器之间的父子关系一般不是以继承（Inheritance）的关系来实现的，而是通常使用组合（Composition）关系来复用父加载器的代码。</p>
+</li>
+<li><p>工作过程  果一个类加载器收到了类加载的请求，它首先不会自己去尝试加载这个类，而是把这个请求委派给父类加载器去完成，每一个层次的类加载器都是如此，因此所有的加载请求最终都应该传送到最顶层的启动类加载器中，只有当父加载器反馈自己无法完成这个加载请求（它的搜索范围中没有找到所需的类）时，子加载器才会尝试自己去完成加载。</p>
+</li>
+<li><p>双亲委派模型的突破</p>
+<ul>
+<li><p>为了向下兼容：如果父类加载失败，会自动调用自己的findClass()方法来完成加载，这样既不影响用户按照自己的意愿去加载类，又可以保证新写出来的类加载器是符合双亲委派规则的。</p>
+</li>
+<li><p>自身缺陷：有基础类型又要调用回用户的代码 例如：JNDI服务（JDBC这种）   引入了一个不太优雅的设计：线程上下文类加载器（Thread ContextClassLoader）。这个类加载器可以通过java.lang.Thread类的setContext-ClassLoader()方法进行设置，如果创建线程时还未设置，它将会从父线程中继承一个，如果在应用程序的全局范围内都没有设置过的话，那这个类加载器默认就是应用程序类加载器。<strong>这是一种父类加载器去请求子类加载器完成类加载的行为</strong></p>
+</li>
+<li><p>用户对程序动态性的追求：代码热替换（Hot Swap）、模块热部署（HotDeployment）等   </p>
+<p>OSGi实现模块化热部署的关键是它自定义的类加载器机制的实现，每一个程序模块（OSGi中称为Bundle）都有一个自己的类加载器，当需要更换一个Bundle时，就把Bundle连同类加载器一起换掉以实现代码的热替换。在OSGi环境下，类加载器不再双亲委派模型推荐的树状结构，而是进一步发展为更加复杂的网状结构，当收到类加载请求时，OSGi将按照下面的顺序进行类搜索：</p>
+<ul>
+<li>将以java.*开头的类，委派给父类加载器加载</li>
+<li>否则，将委派列表名单内的类，委派给父类加载器加载。</li>
+<li>否则，将Import列表中的类，委派给Export这个类的Bundle的类加载器加载。</li>
+<li>否则，查找当前Bundle的ClassPath，使用自己的类加载器加载。</li>
+<li>否则，查找类是否在自己的Fragment Bundle中，如果在，则委派给Fragment Bundle的类加载器加载。</li>
+<li>否则，查找Dynamic Import列表的Bundle，委派给对应Bundle的类加载器加载。</li>
+<li>否则，类查找失败。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="java模块化"><a href="#java模块化" class="headerlink" title="java模块化"></a>java模块化</h4><ul>
+<li>依赖其他模块的列表。</li>
+<li>导出的包列表，即其他模块可以使用的列表。</li>
+<li>开放的包列表，即其他模块可反射访问模块的列表。</li>
+<li>使用的服务列表。</li>
+<li>提供服务的实现列表。</li>
+<li>模块兼容性<ul>
+<li>JAR文件在类路径的访问规则：所有类路径下的JAR文件及其他资源文件，都被视为自动打包在一个匿名模块（UnnamedModule）里，这个匿名模块几乎是没有任何隔离的，它可以看到和使用类路径上所有的包、JDK系统模块中所有的导出包，以及模块路径上所有模块中导出的包。</li>
+<li>模块在模块路径的访问规则：模块路径下的具名模块（NamedModule）只能访问到它依赖定义中列明依赖的模块和包，匿名模块里所有的内容对具名模块来说都是不可见的，即具名模块看不见传统JAR包的内容。</li>
+<li>JAR文件在模块路径的访问规则：如果把一个传统的、不包含模块定义的JAR文件放置到模块路径中，它就会变成一个自动模块（Automatic Module）。尽管不包含module-info.class，但自动模块将默认依赖于整个模块路径中的所有模块，因此可以访问到所有模块导出的包，自动模块也默认导出自己所有的包。</li>
+</ul>
+</li>
+<li>扩展类加载器（Extension Class Loader）被平台类加载器（Platform Class Loader）取代</li>
+<li>当平台及应用程序类加载器收到类加载请求，在委派给父加载器加载前，要先判断该类是否能够归属到某一个系统模块中，如果可以找到这样的归属关系，就要优先委派给负责那个模块的加载器完成加载</li>
+</ul>
+<h3 id="4、虚拟机字节码执行引擎"><a href="#4、虚拟机字节码执行引擎" class="headerlink" title="4、虚拟机字节码执行引擎"></a>4、虚拟机字节码执行引擎</h3><h4 id="运行时栈帧结构"><a href="#运行时栈帧结构" class="headerlink" title="运行时栈帧结构"></a>运行时栈帧结构</h4><ul>
+<li><p>局部变量表   一组变量值的存储空间，用于存放方法参数和方法内部定义的局部变量。其在Java程序被编译为Class文件时，就确定了最大容量（在方法的Code属性的max_locals数据项中确定了）</p>
+<ul>
+<li>变量槽为最小单位，一个变量槽可以存放32位以内的数据类型：boolean、byte、char、short、int、float、reference和returnAddress。俩个变量槽 存 long和double（虽然被分割成俩个变量槽了，但是jvm不允许任何操作其中某一个的变量槽，再加上线程私有所以也安全）</li>
+<li>局部变量表的调用采用索引，32位n代表第n个变量槽，64位n代表n和n+1个，对于实例方法，空出来0索引作为本方法的对象实例（this），其他从1开始</li>
+<li>变量槽可以重用，在方法体内的变量可能并不需要生存整个方法体，垃圾回收发生在方法未结束时，不显示置为null或者别的变量覆盖的情况下，会影响垃圾回收（局部变量表是GCroots的一部分）（<strong>不推荐使用，因为现在的编译优化了，而且实际虚拟机使用解释器时可能也有处理</strong>）这些情况可以看情况进行显示清空<strong>（对象占用内存大、此方法的栈帧长时间不能被回收、方法调用次数达不到即时编译器的编译条件）</strong></li>
+</ul>
+</li>
+<li><p>操作数栈     也常被称为操作栈，它是一个后入先出（Last In First Out，LIFO）栈。同局部变量表一样，操作数栈的最大深度也在编译的时候被写入到Code属性的max_stacks数据项之中。</p>
+<ul>
+<li>操作数栈的每一个元素都可以是包括long和double在内的任意Java数据类型。32位数据类型所占的栈容量为1，64位数据类型所占的栈容量为2。Javac编译器的数据流分析工作保证了在方法执行的任何时候，操作数栈的深度都不会超过在max_stacks数据项中设定的最大值。</li>
+<li>方法刚开始时，操作数栈为空。方法执行过程中，各种字节码指令往操作数栈中写入和提取内容，也就是出入栈操作。</li>
+<li>操作数栈中元素的数据类型必须与字节码指令的序列严格匹配，iadd指令只能操作俩个int类型相加</li>
+</ul>
+</li>
+<li><p>动态连接    个栈帧都包含一个指向运行时常量池[插图]中该栈帧所属方法的引用，持有这个引用是为了支持方法调用过程中的动态连接。</p>
+<ul>
+<li>我们知道Class文件的常量池中存有大量的符号引用，字节码中的方法调用指令就以常量池里指向方法的符号引用作为参数。这些符号引用一部分会在类加载阶段或者第一次使用的时候就被转化为直接引用，这种转化被称为<strong>静态解析</strong>。另外一部分将在每一次运行期间都转化为直接引用，这部分就称为<strong>动态连接</strong></li>
+</ul>
+</li>
+<li><p>方法返回地址</p>
+<ul>
+<li>正常调用完成    执行引擎遇到任意一个方法返回的字节码指令，这时候可能会有返回值传递给上层的方法调用者（调用当前方法的方法称为调用者或者主调方法），方法是否有返回值以及返回值的类型将根据遇到何种方法返回指令来决定</li>
+<li>异常调用完成    在方法执行的过程中遇到了异常，并且这个异常没有在方法体内得到妥善处理。无论是Java虚拟机内部产生的异常，还是代码中使用athrow字节码指令产生的异常，只要在本方法的异常表中没有搜索到匹配的异常处理器，就会导致方法退出</li>
+</ul>
+</li>
+</ul>
+<h4 id="方法调用"><a href="#方法调用" class="headerlink" title="方法调用"></a>方法调用</h4><ul>
+<li>解析  解析调用一定是个静态的过程，在编译期间就完全确定，在类加载的解析阶段就会把涉及的符号引用全部转变为明确的直接引用，不必延迟到运行期再去完成<ul>
+<li>在Java语言中符合“编译期可知，运行期不可变”这个要求的方法，主要有静态方法和私有方法两大类，前者与类型直接关联，后者在外部不可被访问，这两种方法各自的特点决定了它们都不可能通过继承或别的方式重写出其他版本，因此它们都适合在类加载阶段进行解析<ul>
+<li>invokestatic。用于调用静态方法</li>
+<li>invokespecial。用于调用实例构造器<init>()方法、私有方法和父类中的方法</li>
+<li>invokevirtual。用于调用所有的虚方法（重写的方法，因为只有调用的时候才知道是不是多态的，是不是往上找）  （就是被final修饰方法不是虚方法但是也是这个指令），Java对象里面的方法默认（即不使用final修饰）就是虚方法</li>
+<li>invokeinterface。用于调用接口方法，会在运行时再确定一个实现该接口的对象</li>
+<li>invokedynamic。先在运行时动态解析出调用点限定符所引用的方法，然后再执行该方法。前面4条调用指令，分派逻辑都固化在Java虚拟机内部，而invokedynamic指令的分派逻辑是由用户设定的引导方法来决定的</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>分派<ul>
+<li>静态分派 （解释了为什么调用的是父类的方法）（重载  Overload）<ul>
+<li>“Human”称为变量的“静态类型”（Static Type），或者叫“外观类型”（Apparent Type），后面的“Man”则被称为变量的“实际类型”（Actual Type）或者叫“运行时类型”（Runtime Type）。</li>
+<li>静态类型和实际类型在程序中都可能会发生变化，区别是静态类型的变化仅仅在使用时发生，变量本身的静态类型不会被改变，并且最终的静态类型是在编译期可知的；而实际类型变化的结果在运行期才可确定，编译器在编译程序的时候并不知道一个对象的实际类型是什么</li>
+</ul>
+</li>
+<li>动态分派 （Override 重写）<ul>
+<li>在运行期根据实际类型确定方法执行版本的分派过程称为动态分派</li>
+<li>实例方法是使用 invokevirtual指令调用的<ul>
+<li>找到操作数栈顶的第一个元素所指向的对象的<strong>实际类型</strong>，记作C。</li>
+<li>如果在类型C中找到与常量中的描述符和简单名称都相符的方法，则进行访问权限校验，如果通过则返回这个方法的直接引用，查找过程结束；不通过则返回java.lang.IllegalAccessError异常。</li>
+<li>否则，按照继承关系从下往上依次对C的各个父类进行第二步的搜索和验证过程。</li>
+<li>如果始终没有找到合适的方法，则抛出java.lang.AbstractMethodError异常。</li>
+</ul>
+</li>
+<li>只存在虚方法不存在虚字段，要是类里面有同名字段，则子类字段会遮蔽父类的同名字段</li>
+</ul>
+</li>
+<li>单分派与多分派<ul>
+<li>静态分派属于多分派类型  实际类型和参数作为宗量</li>
+<li>动态分派属于单分派类型 只有实际类型作为宗量</li>
+</ul>
+</li>
+<li>虚拟机动态分派的实现<ul>
+<li>一般建立一个虚方法表，存放着各个方法的实际入口地址，如果某个方法在子类中没有被重写，那子类的虚方法表中的地址入口和父类相同方法的地址入口是一致的，都指向父类的实现入口。如果子类中重写了这个方法，子类虚方法表中的地址也会被替换为指向子类实现版本的入口地址</li>
+<li>在invokeinterface执行时也会用到接口方法表——InterfaceMethod Table，简称itable</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="动态类型语言支持"><a href="#动态类型语言支持" class="headerlink" title="动态类型语言支持"></a>动态类型语言支持</h4><ul>
+<li><p>invokedynamic指令</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">thinking</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">try</span>&#123;</span><br><span class="line">        MethodType mt=MethodType.methodType(<span class="keyword">void</span>.class);</span><br><span class="line">        Field lookupImpl=MethodHandles.Lookuo.class.getDeclaredField(&quot;IMPL_LOOKUP&quot;);</span><br><span class="line">        lookupImpl.setAcceddible(<span class="keyword">true</span>);</span><br><span class="line">        MethodHandle mh=((MethodHandles.Lookup)lookupImpl.get(<span class="keyword">null</span>)).findSpecial(GrandFather.class,&quot;thinking&quot;,mt,GrandFather.class);</span><br><span class="line">        mh.invoke(<span class="keyword">this</span>);</span><br><span class="line">    &#125; <span class="keyword">catch</span>(Throwable e)&#123;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ul>
+<h4 id="基于栈的字节码解释执行引擎"><a href="#基于栈的字节码解释执行引擎" class="headerlink" title="基于栈的字节码解释执行引擎"></a>基于栈的字节码解释执行引擎</h4><ul>
+<li>基于栈的指令集<ul>
+<li>主要优点 是可移植，因为寄存器由硬件直接提供[插图]，程序直接依赖这些硬件寄存器则不可避免地要受到硬件的约束</li>
+<li>主要缺点是理论上执行速度相对来说会稍慢一些，所有主流物理机的指令集都是寄存器架构也从侧面印证了这点</li>
+</ul>
+</li>
+</ul>
+<h4 id="类加载架构"><a href="#类加载架构" class="headerlink" title="类加载架构"></a>类加载架构</h4><ul>
+<li>正统类加载结构<ul>
+<li>部署在同一个服务器上的两个Web应用程序所使用的Java类库可以实现相互隔离</li>
+<li>部署在同一个服务器上的两个Web应用程序所使用的Java类库可以互相共享</li>
+<li>服务器需要尽可能地保证自身的安全不受部署的Web应用程序影响</li>
+<li>支持JSP应用的Web服务器，十有八九都需要支持HotSwap（热替换）功能。</li>
+<li>以tomcat为例实现上述功能：<ul>
+<li>放置在/common目录中。类库可被Tomcat和所有的Web应用程序共同使用。</li>
+<li>放置在/server目录中。类库可被Tomcat使用，对所有的Web应用程序都不可见。</li>
+<li>放置在/shared目录中。类库可被所有的Web应用程序共同使用，但对Tomcat自己不可见。</li>
+<li>放置在/WebApp/WEB-INF目录中。类库仅仅可以被该Web应用程序使用，对Tomcat和其他Web应用程序都不可见。</li>
+<li>tomcat6以后简化了默认的目录结构；将/common,/server和/shared3个目录默认合并到了一起变成一个/lib目录，如果默认设置不满足，可以通过修改配置文件，指定server.loader和share.loader的方式重新启用原来完整的加载器架构</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>OSGi：灵活的类加载器架构 （有存在出现循环依赖的可能，jdk7之后，将锁粒度到了类级别，有一定缓解）<ul>
+<li>Bundle    OSGi中的每个模块（称为Bundle）与普通的Java类库区别并不太大，两者一般都以JAR格式进行封装[插图]，并且内部存储的都是Java的Package和Class。但是一个Bundle可以声明它所依赖的Package（通过Import-Package描述），也可以声明它允许导出发布的Package（通过Export-Package描述）。在OSGi里面，Bundle之间的依赖关系从传统的上层模块依赖底层模块转变为平级模块之间的依赖，而且类库的可见性能得到非常精确的控制，一个模块里只有被Export过的Package才可能被外界访问，其他的Package和Class将会被隐藏起来。</li>
+<li>加载方式<ul>
+<li>以java.*开头的类，委派给父类加载器加载。</li>
+<li>否则，委派列表名单内的类，委派给父类加载器加载</li>
+<li>否则，Import列表中的类，委派给Export这个类的Bundle的类加载器加载</li>
+<li>否则，查找当前Bundle的Classpath，使用自己的类加载器加载。</li>
+<li>否则，查找是否在自己的Fragment Bundle中，如果是则委派给Fragment Bundle的类加载器加载。</li>
+<li>否则，查找Dynamic Import列表的Bundle，委派给对应Bundle的类加载器加载</li>
+<li>否则，类查找失败。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="程序编译与代码优化"><a href="#程序编译与代码优化" class="headerlink" title="程序编译与代码优化"></a>程序编译与代码优化</h2><p>编译期</p>
+<ul>
+<li>前端编译期：把*.java文件转变成  *.class文件的过程   JDK的javac</li>
+<li>即时编译期 运行期把字节码转变成本地机器码的过程  HotSpot的C1、C2编译器</li>
+<li>提前编译期 直接把程序编译成与目标机器指令集相关的二进制代码的过程  JDK的Jaotc</li>
+</ul>
+<h4 id="JavaC编译器（前端编译）"><a href="#JavaC编译器（前端编译）" class="headerlink" title="JavaC编译器（前端编译）"></a>JavaC编译器（前端编译）</h4><ul>
+<li><p>准备过程：初始化插入式注解处理器</p>
+</li>
+<li><p>解析与填充符号表过程</p>
+<ul>
+<li>词法、语法分析。将源代码的字符流转变为标记集合，构造出抽象语法树  <ul>
+<li>词法分析   com.sun.tools.javac.parser.Scanner类实现  是将源代码的字符流转变为标记（Token）集合的过程，单个字符是程序编写时的最小元素，但标记才是编译时的最小元素。    int a=b+2，包含6个标记   </li>
+<li>语法分析是  com.sun.tools.javac.parser.Parser类实现   根据标记序列构造抽象语法树的过程，抽象语法树（Abstract Syntax Tree，AST）是一种用来描述程序代码语法结构的树形表示方式，抽象语法树的每一个节点都代表着程序代码中的一个语法结构（Syntax Construct），例如包、类型、修饰符、运算符、接口、返回值甚至连代码注释等都可以是一种特定的语法结构。</li>
+<li>这个阶段产出的抽象语法树是以com.sun.tools.javac.tree.JCTree类表示的</li>
+</ul>
+</li>
+<li>填充符号表。产生符号地址和符号信息<ul>
+<li>符号表（Symbol Table）填充符号表的过程由com.sun.tools.javac.comp.Enter类实现   是由一组符号地址和符号信息构成的数据结构，读者可以把它类比想象成哈希表中键值对的存储形式（实际上符号表不一定是哈希表实现，可以是有序符号表、树状符号表、栈结构符号表等各种形式）。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>插入式注解处理器的注解处理过程：插入式注解处理器的执行阶段</p>
+<ul>
+<li>可以把插入式注解处理器看作是一组编译器的插件，当这些插件工作时，允许读取、修改、添加抽象语法树中的任意元素。如果这些插件在处理注解期间对语法树进行过修改，编译器将回到解析及填充符号表的过程重新处理，直到所有插入式注解处理器都没有再对语法树进行修改为止，每一次循环过程称为一个轮次（Round）</li>
+<li>插入式注解处理器的初始化过程是在initPorcessAnnotations()方法中完成的，而它的执行过程则是在processAnnotations()方法中完成。这个方法会判断是否还有新的注解处理器需要执行，如果有的话，通过com.sun.tools.javac.processing.JavacProcessing-Environment类的doProcessing()方法来生成一个新的JavaCompiler对象，对编译的后续步骤进行处理。</li>
+</ul>
+</li>
+<li><p>分析与字节码生成过程</p>
+<ul>
+<li>标注检查。对语法的静态信息进行检查  Javac源码中的实现类是com.sun.tools.javac.comp.Attr类和com.sun.tools.javac.comp.Check类<ul>
+<li>注检查步骤要检查的内容包括诸如变量使用前是否已被声明、变量与赋值之间的数据类型是否能够匹配，等等</li>
+<li>常量折叠优化 int a=1+2 和 int a=3 是一个工作量</li>
+</ul>
+</li>
+<li>数据流及控制流分析。对程序动态运行过程进行分析   com.sun.tools.javac.comp.Flow类来完成<ul>
+<li>它可以检查出诸如程序局部变量在使用前是否有赋值、方法的每条路径是否都有返回值、是否所有的受查异常都被正确处理了等问题   </li>
+</ul>
+</li>
+<li>解语法糖。将简化代码编写的语法糖还原为原有形式  解语法糖的过程由desugar()方法触发，在com.sun.tools.javac.comp.TransTypes类和com.sun.tools.javac.comp.Lower类中完成</li>
+<li>字节码生成。将前面各个步骤所生成的信息转化成字节码。  Javac源码里面由com.sun.tools.javac.jvm.Gen类来完成<ul>
+<li>字节码生成阶段不仅仅是把前面各个步骤所生成的信息（语法树、符号表）转化成字节码指令写到磁盘中，编译器还进行了少量的代码添加和转换工作 比如 <clinit>和没有申明<init> 方法时的空<init>方法</li>
+</ul>
+</li>
+<li>com.sun.tools.javac.jvm.ClassWriter类 最终输出Class文件</li>
+</ul>
+</li>
+<li><p>语法糖</p>
+<ul>
+<li><p>泛型：java是类型擦除式泛型  在运行期再实际</p>
+<ul>
+<li>“裸类型”（Raw Type）  该泛型的父类    该泛型可以使ArrayList<int>  ArrayList<String>等待</li>
+<li>为了解决int和long之类的转换。  直接加入自动拆装箱</li>
+</ul>
+</li>
+<li><p>自动拆装箱与遍历循环</p>
+</li>
+<li><p>条件编译  使用条件为常量的if语句</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;block 1&quot;</span>);</span><br><span class="line">&#125;<span class="keyword">else</span>&#123;</span><br><span class="line">    System.out.println(<span class="string">&quot;block 2&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="后端编译与优化"><a href="#后端编译与优化" class="headerlink" title="后端编译与优化"></a>后端编译与优化</h4><h5 id="即时编译器"><a href="#即时编译器" class="headerlink" title="即时编译器"></a>即时编译器</h5><p>当程序需要迅速启动和执行的时候，解释器可以首先发挥作用，省去编译的时间，立即运行。当程序启动后，随着时间的推移，编译器逐渐发挥作用，把越来越多的代码编译成本地代码，这样可以减少解释器的中间损耗，获得更高的执行效率。当程序运行环境中内存资源限制较大，可以使用解释执行节约内存（如部分嵌入式系统中和大部分的JavaCard应用中就只有解释器的存在），反之可以使用编译执行来提升效率。同时，解释器还可以作为编译器激进优化时后备的“逃生门”（如果情况允许，HotSpot虚拟机中也会采用不进行激进优化的客户端编译器充当“逃生门”的角色），让编译器根据概率选择一些不能保证所有情况都正确，但大多数时候都能提升运行速度的优化手段，当激进优化的假设不成立，如加载了新类以后，类型继承结构出现变化、出现“罕见陷阱”（Uncommon Trap）时可以通过逆优化（Deoptimization）退回到解释状态继续执行，因此在整个Java虚拟机执行架构里，解释器与编译器经常是相辅相成地配合工作</p>
+<ul>
+<li><p>解释器：直接将代码解释为机器可以执行的</p>
+</li>
+<li><p>编译器：将代码编译成本地机器码。</p>
+</li>
+<li><p>分层编译（用客户端编译器获取更高的编译速度，用服务端编译器来获取更好的编译质量）</p>
+<ul>
+<li>第0层。程序纯解释执行，并且解释器不开启性能监控功能</li>
+<li>第1层。使用客户端编译器将字节码编译为本地代码来运行，进行简单可靠的稳定优化，不开启性能监控功能</li>
+<li>第2层。仍然使用客户端编译器执行，仅开启方法及回边次数统计等有限的性能监控功能</li>
+<li>第3层。仍然使用客户端编译器执行，开启全部性能监控，除了第2层的统计信息外，还会收集如分支跳转、虚方法调用版本等全部的统计信息</li>
+<li>第4层。使用服务端编译器将字节码编译为本地代码，相比起客户端编译器，服务端编译器会启用更多编译耗时更长的优化，还会根据性能监控信息进行一些不可靠的激进优化</li>
+</ul>
+</li>
+<li><p>热点代码</p>
+<ul>
+<li>被多次调用的方法  由于是依靠方法调用触发的编译，那编译器理所当然地会以整个方法作为编译对象，这种编译也是虚拟机中标准的即时编译方式</li>
+<li>被多次执行的循环体  但编译器依然必须以整个方法作为编译对象，只是执行入口（从方法第几条字节码指令开始执行）会稍有不同，编译时会传入执行入口点字节码序号（Byte Code Index，BCI）。这种编译方式因为编译发生在方法执行的过程中，因此被很形象地称为“栈上替换”（OnStack Replacement，OSR），即方法的栈帧还在栈上，方法就被替换了。</li>
+</ul>
+</li>
+<li><p>热点代码识别方式</p>
+<ul>
+<li>基于采样的热点探测（Sample Based Hot Spot CodeDetection）。 采用这种方法的虚拟机会周期性地检查各个线程的调用栈顶，如果发现某个（或某些）方法经常出现在栈顶，那这个方法就是“热点方法”。基于采样的热点探测的好处是实现简单高效，还可以很容易地获取方法调用关系（将调用堆栈展开即可），缺点是很难精确地确认一个方法的热度，容易因为受到线程阻塞或别的外界因素的影响而扰乱热点探测。</li>
+<li>基于计数器的热点探测（Counter Based Hot Spot CodeDetection）。<ul>
+<li>-XX：CompileThreshold 设置方法计数器阈值   服务端默认10000次，客户端默认1500次</li>
+<li>-XX：BackEdgeThreshold供用户设置，但是当前的HotSpot虚拟机实际上并未使用此参数，我们必须设置另外一个参数-XX：OnStackReplacePercentage来间接调整回边计数器的阈值<ul>
+<li>虚拟机运行在客户端模式下，回边计数器阈值计算公式为：方法调用计数器阈值（-XX：CompileThreshold）乘以OSR比率（-XX：OnStackReplacePercentage）除以100。其中-XX：OnStackReplacePercentage默认值为933，如果都取默认值，那客户端模式虚拟机的回边计数器的阈值为13995</li>
+<li>虚拟机运行在服务端模式下，回边计数器阈值的计算公式为：方法调用计数器阈值（-XX：CompileThreshold）乘以（OSR比率（-XX：OnStackReplacePercentage）减去解释器监控比率（-XX：InterpreterProfilePercentage）的差值）除以100。其中-XX：OnStack ReplacePercentage默认值为140，-XX：InterpreterProfilePercentage默认值为33，如果都取默认值，那服务端模式虚拟机回边计数器的阈值为10700</li>
+</ul>
+</li>
+<li>-XX：-UseCounterDecay来关闭热度衰减   当超过一定的时间限度，如果方法的调用次数仍然不足以让它提交给即时编译器编译，那该方法的调用计数器就会被减少一半；这个时间周期被称为半衰周期。</li>
+<li>-XX：CounterHalfLifeTime参数设置半衰周期的时间，单位是秒</li>
+<li>与方法计数器不同，回边计数器没有计数热度衰减的过程，因此这个计数器统计的就是该方法循环执行的绝对次数。当计数器溢出的时候，它还会把方法计数器的值也调整到溢出状态，这样下次再进入该方法的时候就会执行标准编译过程</li>
+<li>采用这种方法的虚拟机会为每个方法（甚至是代码块）建立计数器，统计方法的执行次数，如果执行次数超过一定的阈值（这个阈值是<strong>方法计数器+回边计数器</strong>（即为栈上计数器，为循环体上的次数））就认为它是“热点方法”。这种统计方法实现起来要麻烦一些，需要为每个方法建立并维护计数器，而且不能直接获取到方法的调用关系。但是它的统计结果相对来说更加精确严谨。</li>
+</ul>
+</li>
+<li>参数-XX：-BackgroundCompilation来禁止后台编译  <ul>
+<li>在默认条件下，无论是方法调用产生的标准编译请求，还是栈上替换编译请求，虚拟机在编译器还未完成编译之前，都仍然将按照解释方式继续执行代码，而编译动作则在后台的编译线程中进行；  </li>
+<li>后台编译被禁止后，当达到触发即时编译的条件时，执行线程向虚拟机提交编译请求以后将会一直阻塞等待，直到编译过程完成再开始执行编译器输出的本地代码。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h5 id="提前编译器"><a href="#提前编译器" class="headerlink" title="提前编译器"></a>提前编译器</h5><ul>
+<li>提前编译器（JAVA 9引入Jaotc作为提前编译器，代码质量相对较好，可以极限榨取性能）<ul>
+<li>静态提前编译   在程序运行之前把程序代码编译成机器码的静态翻译工作（可以采用很多重负载优化手段，如过程间分析）</li>
+<li>动态提前编译  把原本即时编译器在运行时要做的编译工作提前做好并保存下来，下次运行到这些代码（譬如公共库代码在被同一台机器其他Java进程使用）时直接把它加载进来使用。（本质是给即时编译器做缓存加速，去改善Java程序的启动时间，以及需要一段时间预热后才能到达最高性能的问题）（<strong>限制了使用的HotSpot虚拟机的参数，和运行的目标机器也有关</strong>）</li>
+</ul>
+</li>
+<li>即时编译器编译的代码质量的部分优点<ul>
+<li>性能分析制导优化    如果一个条件分支的某一条路径执行特别频繁，而其他路径鲜有问津，那就可以把热的代码集中放到一起，集中优化和分配更好的资源（分支预测、寄存器、缓存等）给它    <strong>比如热代码</strong></li>
+<li>激进预测性优化  相对于提前编译来说，即时编译的策略就可以不必这样保守，如果性能监控信息能够支持它做出一些正确的可能性很大但无法保证绝对正确的预测判断，就已经可以大胆地按照高概率的假设进行优化，万一真的走到罕见分支上，大不了退回到低级编译器甚至解释器上去执行，并不会出现无法挽救的后果   <strong>比如虚方法调用（大部分方法都是直接调用虚方法，不对再回退）</strong></li>
+<li>链接时优化 （LTO） java天生动态链接，但是C和C++不是</li>
+</ul>
+</li>
+</ul>
+<h5 id="编译器优化"><a href="#编译器优化" class="headerlink" title="编译器优化"></a>编译器优化</h5><ul>
+<li>方法内联（最重要）<ul>
+<li>Java虚拟机首先引入了一种名为类型继承关系分析（Class Hierarchy Analysis，CHA）的技术，这是整个应用程序范围内的类型分析技术，用于确定在目前已加载的类中，某个接口是否有多于一种的实现、某个类是否存在子类、某个子类是否覆盖了父类的某个虚方法等信息。<ul>
+<li>如果是非虚方法，那么直接进行内联就可以了，这种的内联是有百分百安全保障的</li>
+<li>如果遇到虚方法，则会向CHA查询此方法在当前程序状态下是否真的有多个目标版本可供选择，如果查询到只有一个版本，那就可以假设“应用程序的全貌就是现在运行的这个样子”来进行内联，这种内联被称为守护内联（GuardedInlining）不过由于Java程序是动态连接的，说不准什么时候就会加载到新的类型从而改变CHA结论，因此这种内联属于激进预测性优化，必须预留好“逃生门”，即当假设条件不成立时的“退路”（Slow Path）。假如在程序的后续执行过程中，虚拟机一直没有加载到会令这个方法的接收者的继承关系发生变化的类，那这个内联优化的代码就可以一直使用下去。如果加载了导致继承关系发生变化的新类，那么就必须抛弃已经编译的代码，退回到解释状态进行执行，或者重新进行编译。</li>
+<li>假如向CHA查询出来的结果是该方法确实有多个版本的目标方法可供选择，那即时编译器还将进行最后一次努力，使用内联缓存（Inline Cache）的方式来缩减方法调用的开销。这种状态下方法调用是真正发生了的，但是比起直接查虚方法表还是要快一些。内联缓存是一个建立在目标方法正常入口之前的缓存，它的工作原理大致为：在未发生方法调用之前，内联缓存状态为空，当第一次调用发生后，缓存记录下方法接收者的版本信息，并且每次进行方法调用时都比较接收者的版本。如果以后进来的每次调用的方法接收者版本都是一样的，那么这时它就是一种单态内联缓存（Monomorphic Inline Cache）。通过该缓存来调用，比用不内联的非虚方法调用，仅多了一次类型判断的开销而已。但如果真的出现方法接收者不一致的情况，就说明程序用到了虚方法的多态特性，这时候会退化成超多态内联缓存（Megamorphic Inline Cache），其开销相当于真正查找虚方法表来进行方法分派。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>逃逸分析（最前沿）<ul>
+<li>基本原理：分析对象动态作用域，当一个对象在方法里面被定义后，它可能被外部方法所引用，例如作为调用参数传递到其他方法中，这种称为方法逃逸；甚至还有可能被外部线程访问到，譬如赋值给可以在其他线程中访问的实例变量，这种称为线程逃逸；从不逃逸、方法逃逸到线程逃逸，称为对象由低到高的不同逃逸程度。</li>
+<li>栈上分配（HotSpot目前不支持）：Java虚拟机中，Java堆上分配创建对象的内存空间几乎是Java程序员都知道的常识，Java堆中的对象对于各个线程都是共享和可见的，只要持有这个对象的引用，就可以访问到堆中存储的对象数据。虚拟机的垃圾收集子系统会回收堆中不再使用的对象，但回收动作无论是标记筛选出可回收对象，还是回收和整理内存，都需要耗费大量资源。如果确定一个对象不会逃逸出线程之外，那让这个对象在栈上分配内存将会是一个很不错的主意，对象所占用的内存空间就可以随栈帧出栈而销毁。在一般应用中，完全不会逃逸的局部对象和不会逃逸出线程的对象所占的比例是很大的，如果能使用栈上分配，那大量的对象就会随着方法的结束而自动销毁了，垃圾收集子系统的压力将会下降很多。栈上分配可以支持方法逃逸，但不能支持线程逃逸。</li>
+<li>标量替换：若一个数据已经无法再分解成更小的数据来表示了，Java虚拟机中的原始数据类型（int、long等数值类型及reference类型等）都不能再进一步分解了，那么这些数据就可以被称为标量。相对的，如果一个数据可以继续分解，那它就被称为聚合量（Aggregate），Java中的对象就是典型的聚合量。如果把一个Java对象拆散，根据程序访问的情况，将其用到的成员变量恢复为原始类型来访问，这个过程就称为标量替换。假如逃逸分析能够证明一个对象不会被方法外部访问，并且这个对象可以被拆散，那么程序真正执行的时候将可能不去创建这个对象，而改为直接创建它的若干个被这个方法使用的成员变量来代替。将对象拆分后，除了可以让对象的成员变量在栈上（栈上存储的数据，很大机会被虚拟机分配至物理机器的高速寄存器中存储）分配和读写之外，还可以为后续进一步的优化手段创建条件。标量替换可以视作栈上分配的一种特例，实现更简单（不用考虑整个对象完整结构的分配），但对逃逸程度的要求更高，它不允许对象逃逸出方法范围内。</li>
+<li>同步消除（Synchronization Elimination）：线程同步本身是一个相对耗时的过程，如果逃逸分析能够确定一个变量不会逃逸出线程，无法被其他线程访问，那么这个变量的读写肯定就不会有竞争，对这个变量实施的同步措施也就可以安全地消除掉</li>
+<li>参数-XX：+DoEscapeAnalysis来手动开启逃逸分析</li>
+<li>使用+XX：+EliminateLocks来开启同步消除</li>
+<li>使用参数-XX：+PrintEliminateAllocations查看标量的替换情况</li>
+</ul>
+</li>
+<li>公共子表达式消除（语言无关）<ul>
+<li>如果一个表达式E之前已经被计算过了，并且从先前的计算到现在E中所有变量的值都没有发生变化，那么E的这次出现就称为公共子表达式。对于这种表达式，没有必要花时间再对它重新进行计算，只需要直接用前面计算过的表达式结果代替E</li>
+<li>如果这种优化仅限于程序基本块内，便可称为局部公共子表达式消除（Local Common SubexpressionElimination），如果这种优化的范围涵盖了多个基本块，那就称为全局公共子表达式消除（Global CommonSubexpression Elimination）</li>
+<li>int d=（c * b）* 12+a+(b * c+a );  可以优化成  int d=E*12+a+(E+a)  有些编译器还可能采用代数化简 int d=E * 13+a+a;</li>
+</ul>
+</li>
+<li>数组边界检查消除、自动装箱消除、安全点消除、消除反射（语言相关）</li>
+<li>Graal编译器</li>
+</ul>
+<h2 id="高效并发"><a href="#高效并发" class="headerlink" title="高效并发"></a>高效并发</h2><h3 id="Java内存模型（并发）"><a href="#Java内存模型（并发）" class="headerlink" title="Java内存模型（并发）"></a>Java内存模型（并发）</h3><ul>
+<li><p>java内存模型</p>
+<ul>
+<li>主内存（Main Memory）：所有变量存储的地方</li>
+<li>工作内存  保存了被该线程使用的变量的主内存副本[插图]，线程对变量的所有操作（读取、赋值等）都必须在工作内存中进行，而不能直接读写主内存中的数据[插图]。</li>
+<li>线程   不同的线程之间也无法直接访问对方工作内存中的变量，线程间变量值的传递均需要通过主内存来完成</li>
+</ul>
+</li>
+<li><p>内存间交互操作</p>
+<ul>
+<li>lock  锁定  作用于主内存变量，把一个变量标识为一条线程独占的状态</li>
+<li>unlock 解锁 作用于主内存变量，把一个处于锁定状态的变量释放出来，释放后的变量才可以被其他线程锁定。</li>
+<li>read 读取 作用于主内存的变量，把一个变量的值从主内存传输到线程的工作内存中，以便load动作使用</li>
+<li>load 载入 作用于工作内存的变量，把read操作从主内存中得到的变量值放入工作内存的变量副本中</li>
+<li>use 使用  作用于工作内存的变量，把工作内存中一个变量的值传递给执行引擎，每当虚拟机遇到一个需要使用变量的值的字节码指令时将会执行这个操作</li>
+<li>assign 赋值 作用于工作内存变量，把一个从执行引擎接受的值赋给工作内存的变量，每当虚拟机遇到一个给变量赋值的字节码指令时执行这个操作</li>
+<li>store 存储  作用于工作内存的变量，把工作内存中一个变量的值传送到主内存中，以便随后write操作使用</li>
+<li>write 写入 作用于主内存的变量，把store操作从工作内存中得到的变量的值放入主内存的变量中。</li>
+</ul>
+</li>
+<li><p>执行上述8种基本操作时必须满足的规则</p>
+<ul>
+<li>不允许read和load、store和write操作之一单独出现，即不允许一个变量从主内存读取了但工作内存不接受，或者工作内存发起回写了但主内存不接受的情况出现</li>
+<li>不允许一个线程丢弃它最近的assign操作，即变量在工作内存中改变了之后必须把该变化同步回主内存</li>
+<li>不允许一个线程无原因地（没有发生过任何assign操作）把数据从线程的工作内存同步回主内存中</li>
+<li>一个新的变量只能在主内存中“诞生”，不允许在工作内存中直接使用一个未被初始化（load或assign）的变量，换句话说就是对一个变量实施use、store操作之前，必须先执行assign和load操作</li>
+<li>一个变量在同一个时刻只允许一条线程对其进行lock操作，但lock操作可以被同一条线程重复执行多次，多次执行lock后，只有执行相同次数的unlock操作，变量才会被解锁</li>
+<li>如果对一个变量执行lock操作，那将会清空工作内存中此变量的值，在执行引擎使用这个变量前，需要重新执行load或assign操作以初始化变量的值</li>
+<li>如果一个变量事先没有被lock操作锁定，那就不允许对它执行unlock操作，也不允许去unlock一个被其他线程锁定的变量</li>
+<li>对一个变量执行unlock操作之前，必须先把此变量同步回主内存中（执行store、write操作）</li>
+</ul>
+</li>
+<li><p>volatile变量使用场景</p>
+<ul>
+<li>运算结果并不依赖变量的当前值，或者能够确保只有单一的线程修改变量的值</li>
+<li>变量不需要与其他状态变量共同参与不变约束</li>
+<li>禁止指令重排序优化<ul>
+<li>只有当线程T对变量V执行的前一个动作是load的时候，线程T才能对变量V执行use动作；并且，只有当线程T对变量V执行的后一个动作是use的时候，线程T才能对变量V执行load动作。线程T对变量V的use动作可以认为是和线程T对变量V的load、read动作相关联的，必须连续且一起出现。                 <strong>这条规则要求在工作内存中，每次使用V前都必须先从主内存刷新最新的值，用于保证能看见其他线程对变量V所做的修改</strong></li>
+<li>只有当线程T对变量V执行的前一个动作是assign的时候，线程T才能对变量V执行store动作；并且，只有当线程T对变量V执行的后一个动作是store的时候，线程T才能对变量V执行assign动作。线程T对变量V的assign动作可以认为是和线程T对变量V的store、write动作相关联的，必须连续且一起出现            <strong>这条规则要求在工作内存中，每次修改V后都必须立刻同步回主内存中，用于保证其他线程可以看到自己对变量V所做的修改</strong></li>
+<li>假定动作A是线程T对变量V实施的use或assign动作，假定动作F是和动作A相关联的load或store动作，假定动作P是和动作F相应的对变量V的read或write动作；与此类似，假定动作B是线程T对变量W实施的use或assign动作，假定动作G是和动作B相关联的load或store动作，假定动作Q是和动作G相应的对变量W的read或write动作。如果A先于B，那么P先于Q                                                           <strong>这条规则要求volatile修饰的变量不会被指令重排序优化，从而保证代码的执行顺序与程序的顺序相同</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>原子性、可见性、有序性</p>
+<ul>
+<li>原子性（Atomicity） 锁之外的6个基本操作，保证了基本类型的访问、读写都是具备原子性的。lock和unlock保证了synchronized块之间的操作具备原子性</li>
+<li>可见性（Visibility）指当一个线程修改了共享变量的值时，其他线程能够立即得知这个修改<ul>
+<li>volatile变量：保证了新值能立即同步到主内存，以及每次使用前立即从主内存刷新</li>
+<li>synchronized 同步块的可见性是由“对一个变量执行unlock操作之前，必须先把此变量同步回主内存中（执行store、write操作）”这条规则获得的</li>
+<li>final关键字：被final修饰的字段在构造器中一旦被初始化完成，并且构造器没有把“this”的引用传递出去（this引用逃逸是一件很危险的事情，其他线程有可能通过这个引用访问到“初始化了一半”的对象），那么在其他线程中就能看见final字段的值</li>
+</ul>
+</li>
+<li>有序性 <ul>
+<li>volatile关键字本身就包含了禁止指令重排序的语义</li>
+<li>而synchronized则是由“一个变量在同一个时刻只允许一条线程对其进行lock操作”这条规则获得的，这个规则决定了持有同一个锁的两个同步块只能串行地进入</li>
+</ul>
+</li>
+<li>先行发生原则（时间先后顺序与先行发生原则之间基本没有因果关系，所以我们衡量并发安全问题的时候不要受时间顺序的干扰，一切必须以先行发生原则为准）<ul>
+<li>程序次序规则（Program Order Rule）：在一个线程内，按照控制流顺序，书写在前面的操作先行发生于书写在后面的操作。注意，这里说的是控制流顺序而不是程序代码顺序，因为要考虑分支、循环等结构</li>
+<li>管程锁定规则（Monitor Lock Rule）：一个unlock操作先行发生于后面对同一个锁的lock操作。这里必须强调的是“同一个锁”，而“后面”是指时间上的先后。</li>
+<li>volatile变量规则（Volatile Variable Rule）：对一个volatile变量的写操作先行发生于后面对这个变量的读操作，这里的“后面”同样是指时间上的先后。</li>
+<li>线程启动规则（Thread Start Rule）：Thread对象的start()方法先行发生于此线程的每一个动作。</li>
+<li>线程终止规则（Thread Termination Rule）：线程中的所有操作都先行发生于对此线程的终止检测，我们可以通过Thread::join()方法是否结束、Thread::isAlive()的返回值等手段检测线程是否已经终止执行。</li>
+<li>线程中断规则（Thread Interruption Rule）：对线程interrupt()方法的调用先行发生于被中断线程的代码检测到中断事件的发生，可以通过Thread::interrupted()方法检测到是否有中断发生。</li>
+<li>对象终结规则（Finalizer Rule）：一个对象的初始化完成（构造函数执行结束）先行发生于它的finalize()方法的开始。</li>
+<li>传递性（Transitivity）：如果操作A先行发生于操作B，操作B先行发生于操作C，那就可以得出操作A先行发生于操作C的结论。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="线程的实现"><a href="#线程的实现" class="headerlink" title="线程的实现"></a>线程的实现</h4><ul>
+<li><p>内核线程实现（1:1线程模型）</p>
+<ul>
+<li>定义：直接由操作系统内核（Kernel，下称内核）支持的线程，这种线程由内核来完成线程切换，内核通过操纵调度器（Scheduler）对线程进行调度，并负责将线程的任务映射到各个处理器上。每个内核线程可以视为内核的一个分身，这样操作系统就有能力同时处理多件事情，支持多线程的内核就称为多线程内核（Multi-ThreadsKernel）</li>
+<li>程序一般不会直接使用内核线程，而是使用内核线程的一种高级接口——轻量级进程（我们通常意义上所讲的线程）<ul>
+<li>优点：每个轻量级进程都成为一个独立的调度单元，即使其中某一个轻量级进程在系统调用中被阻塞了，也不会影响整个进程继续工作、</li>
+<li>缺点：各种线程操作，如创建、析构及同步，都需要进行系统调用。而系统调用的代价相对较高，需要在用户态（User Mode）和内核态（Kernel Mode）中来回切换。其次，每个轻量级进程都需要有一个内核线程的支持，因此轻量级进程要消耗一定的内核资源</li>
+</ul>
+</li>
+<li>一个系统支持的轻量级进程的数量有限；由于每个轻量级进程都由一个内核线程支持，因此只有先支持内核线程，才能有轻量级进程</li>
+</ul>
+</li>
+<li><p>用户线程（1：n线程模型（绿色线程））</p>
+<ul>
+<li>定义：<ul>
+<li>广义上一个线程只要不是内核线程，都可以认为是用户线程（UserThread，UT）的一种(包括了轻量级进程)</li>
+<li>狭义上的用户线程指的是完全建立在用户空间的线程库上，系统内核不能感知到用户线程的存在及如何实现的</li>
+</ul>
+</li>
+<li>优点：不需要系统内核支援，劣势也在于没有系统内核的支援，所有的线程操作都需要由用户程序自己去处理</li>
+<li>缺点：线程的创建、销毁、切换和调度都是用户必须考虑的问题，而且由于操作系统只把处理器资源分配到进程，那诸如“阻塞如何处理”“多处理器系统中如何将线程映射到其他处理器上”这类问题解决起来将会异常困难，甚至有些是不可能实现的。因为使用用户线程实现的程序通常都比较复杂</li>
+</ul>
+</li>
+<li><p>混合实现（m:n线程模型）</p>
+<ul>
+<li>定义：在这种混合实现下，既存在用户线程，也存在轻量级进程。用户线程还是完全建立在用户空间中，因此用户线程的创建、切换、析构等操作依然廉价，并且可以支持大规模的用户线程并发。而操作系统支持的轻量级进程则作为用户线程和内核线程之间的桥梁，这样可以使用内核提供的线程调度功能及处理器映射，并且用户线程的系统调用要通过轻量级进程来完成，这大大降低了整个进程被完全阻塞的风险</li>
+</ul>
+</li>
+<li><p>java线程</p>
+<ul>
+<li>java虚拟机在主流平台上采用1：1的线程模型</li>
+<li>采用抢占式线程调度<ul>
+<li>协同式线程调度：线程的执行时间由线程本身来控制，线程把自己的工作执行完了之后，要主动通知系统切换到另外一个线程上去。（线程阻塞导致不稳定）</li>
+<li>每个线程将由系统来分配执行时间，线程的切换不由线程本身来决定</li>
+</ul>
+</li>
+<li>java存在线程优先级（但只是参考不准）（setPriority()方法 1~10  10个值 10最大，一般默认5）</li>
+</ul>
+</li>
+<li><p>java线程状态  在任意一个时间点中，一个线程只能有且只有其中的一种状态，并且可以通过特定的方法在不同状态之间转换</p>
+<ul>
+<li>新建（New）   创建后尚未启动的线程处于这种状态</li>
+</ul>
+</li>
+<li><p>运行（Runnable） 包括操作系统线程状态中的Running和Ready，也就是处于此状态的线程有可能正在执行，也有可能正在等待着操作系统为它分配执行时间</p>
+<ul>
+<li><p>无限期等待（Waiting） 处于这种状态的线程不会被分配处理器执行时间，它们要等待被其他线程显式唤醒。以下方法会让线程陷入无限期的等待状态：</p>
+<ul>
+<li>没有设置Timeout参数的Object::wait()方法</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>没有设置Timeout参数的Thread::join()方法 （thread.Join把指定的线程加入到当前线程，可以将两个交替执行的线程合并为顺序执行的线程。比如在线程B中调用了线程A的Join()方法，直到线程A执行完毕后，才会继续执行线程B。）</p>
+<ul>
+<li>LockSupport::park()方法（LockSupport类是Java6(JSR166-JUC)引入的一个类，提供了基本的线程同步原语类似于wait和notify）</li>
+</ul>
+</li>
+<li><p>限期等待（Timed Waiting）：处于这种状态的线程也不会被分配处理器执行时间，不过无须等待被其他线程显式唤醒，在一定时间之后它们会由系统自动唤醒。以下方法会让线程进入限期等待状态：</p>
+<ul>
+<li>Thread::sleep()方法<ul>
+<li>设置了Timeout参数的Object::wait()方法；</li>
+</ul>
+</li>
+<li>设置了Timeout参数的Thread::join()方法；</li>
+<li>LockSupport::parkNanos()方法；</li>
+<li>LockSupport::parkUntil()方法。<ul>
+<li>阻塞（Blocked）：线程被阻塞了，“阻塞状态”与“等待状态”的区别是“阻塞状态”在等待着获取到一个排它锁，这个事件将在另外一个线程放弃这个锁的时候发生；而“等待状态”则是在等待一段时间，或者唤醒动作的发生。在程序等待进入同步区域的时候，线程将进入这种状态</li>
+<li>结束（Terminated）：已终止线程的线程状态，线程已经结束执行。</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">   ThreadTest threadTest=<span class="keyword">new</span> ThreadTest(sb,stringBuilder,<span class="number">1</span>);</span><br><span class="line">LockSupport.park(threadTest);<span class="comment">//wait</span></span><br><span class="line">   LockSupport.unpark(threadTest);<span class="comment">//notify</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="java与协程"><a href="#java与协程" class="headerlink" title="java与协程"></a>java与协程</h4><ul>
+<li>纤程（Fiber）  java的有栈携程 还在开发中（Loom项目，2018开始）</li>
+</ul>
+<h3 id="线程安全与锁优化（高效）"><a href="#线程安全与锁优化（高效）" class="headerlink" title="线程安全与锁优化（高效）"></a>线程安全与锁优化（高效）</h3><h4 id="线程安全分类"><a href="#线程安全分类" class="headerlink" title="线程安全分类"></a>线程安全分类</h4><ul>
+<li>不可变<ul>
+<li>如果多线程共享的数据是一个基本数据类型，那么只要在定义时使用final关键字修饰它就可以保证它是不可变的</li>
+<li>如果共享数据是一个对象，由于Java语言目前暂时还没有提供值类型的支持，那就需要对象自行保证其行为不会对其状态产生任何影响才行。（最简单的一种就是把对象里面带有状态的变量都声明为final；String就是）</li>
+</ul>
+</li>
+<li>绝对线程安全  线程安全的类（即各个方法都加上了synchronized），任然需要再实际调用方法中增加锁</li>
+<li>相对线程安全  我们通常意义上所讲的线程安全。它需要保证对这个对象单次的操作是线程安全的，我们在调用的时候不需要进行额外的保障措施，但是对于一些特定顺序的连续调用，就可能需要在调用端使用额外的同步手段来保证调用的正确性</li>
+<li>线程兼容 指对象本身并不是线程安全的，但是可以通过在调用端正确地使用同步手段来保证对象在并发环境中可以安全地使用。</li>
+<li>线程对立 指不管调用端是否采取了同步措施，都无法在多线程环境中并发使用代码<ul>
+<li>suspend()和resume()方法</li>
+<li>System.setIn()、Sytem.setOut()和System.runFinalizersOnExit()</li>
+</ul>
+</li>
+</ul>
+<h4 id="线程安全实现"><a href="#线程安全实现" class="headerlink" title="线程安全实现"></a>线程安全实现</h4><ul>
+<li>互斥同步（Mutual Exclusion &amp;Synchronization）<ul>
+<li>定义：是一种最常见也是最主要的并发正确性保障手段。同步是指在多个线程并发访问共享数据时，保证共享数据在同一个时刻只被一条（或者是一些，当使用信号量的时候）线程使用</li>
+<li>互斥手段：临界区（CriticalSection）、互斥量（Mutex）和信号量（Semaphore）</li>
+<li>synchronized  <ul>
+<li>转化成monitorenter和monitorexit进行块锁定  这两个字节码指令都需要一个reference类型的参数来指明要锁定和解锁的对象。如果Java源码中的synchronized明确指定了对象参数，那就以这个对象的引用作为reference；如果没有明确指定，那将根据synchronized修饰的方法类型（如实例方法或类方法），来决定是取代码所在的对象实例还是取类型对应的Class对象来作为线程要持有的锁。</li>
+<li>被synchronized修饰的同步块对同一条线程来说是可重入的。这意味着同一线程反复进入同步块也不会出现自己把自己锁死的情况</li>
+<li>被synchronized修饰的同步块在持有锁的线程执行完毕并释放锁之前，会无条件地阻塞后面其他线程的进入。这意味着无法像处理某些数据库中的锁那样，强制已获取锁的线程释放锁；也无法强制正在等待锁的线程中断等待或超时退出</li>
+</ul>
+</li>
+<li>ReentrantLock（重入锁）<ul>
+<li>等待可中断：是指当持有锁的线程长期不释放锁的时候，正在等待的线程可以选择放弃等待，改为处理其他事情。可中断特性对处理执行时间非常长的同步块很有帮助</li>
+<li>公平锁：是指多个线程在等待同一个锁时，必须按照申请锁的时间顺序来依次获得锁；而非公平锁则不保证这一点，在锁被释放时，任何一个等待锁的线程都有机会获得锁。<strong>synchronized中的锁是非公平的，ReentrantLock在默认情况下也是非公平的，但可以通过带布尔值的构造函数要求使用公平锁。不过一旦使用了公平锁，将会导致ReentrantLock的性能急剧下降，会明显影响吞吐量。</strong></li>
+<li>锁绑定多个条件：是指一个ReentrantLock对象可以同时绑定多个Condition对象。在synchronized中，锁对象的wait()跟它的notify()或者notifyAll()方法配合可以实现一个隐含的条件，如果要和多于一个的条件关联的时候，就不得不额外添加一个锁；而ReentrantLock则无须这样做，多次调用newCondition()方法即可</li>
+</ul>
+</li>
+<li>synchronized与ReentrantLock<ul>
+<li>synchronized是在Java语法层面的同步，足够清晰，也足够简单。每个Java程序员都熟悉synchronized，但J.U.C中的Lock接口则并非如此。因此在只需要基础的同步功能时，更推荐synchronized</li>
+<li>Lock应该确保在finally块中释放锁，否则一旦受同步保护的代码块中抛出异常，则有可能永远不会释放持有的锁。这一点必须由程序员自己来保证，而使用synchronized的话则可以由Java虚拟机来确保即使出现异常，锁也能被自动释放</li>
+<li>尽管在JDK 5时代ReentrantLock曾经在性能上领先过synchronized，但这已经是十多年之前的胜利了。从长远来看，Java虚拟机更容易针对synchronized来进行优化，因为Java虚拟机可以在线程和对象的元数据中记录synchronized中锁的相关信息，而使用J.U.C中的Lock的话，Java虚拟机是很难得知具体哪些锁对象是由特定线程锁持有的。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>非阻塞同步  基于冲突检测的乐观并发策略<ul>
+<li>硬件指令集CAS发展产生无锁编程</li>
+<li>CAS比较并交换（Compare-and-Swap）<ul>
+<li>CAS指令需要有三个操作数，分别是内存位置（在Java中可以简单地理解为变量的内存地址，用V表示）、旧的预期值（用A表示）和准备设置的新值（用B表示）。CAS指令执行时，当且仅当V符合A时，处理器才会用B更新V的值，否则它就不执行更新。但是，不管是否更新了V的值，都会返回V的旧值，上述的处理过程是一个原子操作，执行期间不会被其他线程中断。</li>
+<li>ABA问题：可以用版本号解决</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>无同步方案<ul>
+<li>定义    要保证线程安全，也并非一定要进行阻塞或非阻塞同步，同步与线程安全两者没有必然的联系。同步只是保障存在共享数据争用时正确性的手段，如果能让一个方法本来就不涉及共享数据，那它自然就不需要任何同步措施去保证其正确性，因此会有一些代码天生就是线程安全的</li>
+<li>可重入代码（简单判断原则：如果一个方法的返回结果是可以预测的，只要输入了相同的数据，就都能返回相同的结果，那它就满足可重入性的要求，当然也就是线程安全的）<ul>
+<li>不依赖全局变量</li>
+<li>存储在堆上的数据和公用的系统资源</li>
+<li>用到的状态量都由参数中传入</li>
+<li>不调用非可重入的方法</li>
+</ul>
+</li>
+<li>线程本地存储（Thread Local Storage）：如果一段代码中所需要的数据必须与其他代码共享，那就看看这些共享数据的代码是否能保证在同一个线程中执行。如果能保证，我们就可以把共享数据的可见范围限制在同一个线程之内，这样，无须同步也能保证线程之间不出现数据争用的问题。典型引用：web交互模型：一个请求对应一个服务器线程。</li>
+<li>如果一个变量只要被某个线程独享。可以通过java.lang.ThreadLocal类来实现线程本地存储的功能。每一个线程的Thread对象中都有一个ThreadLocalMap对象，这个对象存储了一组以ThreadLocal.threadLocalHashCode为键，以本地线程变量为值的K-V值对，ThreadLocal对象就是当前线程的ThreadLocalMap的访问入口，每一个ThreadLocal对象都包含了一个独一无二的threadLocalHashCode值，使用这个值就可以在线程K-V值对中找回对应的本地线程变量。</li>
+</ul>
+</li>
+</ul>
+<h4 id="锁优化"><a href="#锁优化" class="headerlink" title="锁优化"></a>锁优化</h4><ul>
+<li>自旋锁与自适应自旋<ul>
+<li>自旋锁定义：现在绝大多数的个人电脑和服务器都是多路（核）处理器系统，如果物理机器有一个以上的处理器或者处理器核心，能让两个或以上的线程同时并行执行，我们就可以让后面请求锁的那个线程“稍等一会”，但不放弃处理器的执行时间，看看持有锁的线程是否很快就会释放锁。为了让线程等待，我们只须让线程执行一个忙循环（自旋），这项技术就是所谓的自旋锁</li>
+<li>优点：锁占用时间短，可以避免线程切换的开销</li>
+<li>缺点：一直自旋，会拜拜消耗处理器时间。</li>
+<li>自适应自旋：如果在同一个锁对象上，自旋等待刚刚成功获得过锁，并且持有锁的线程正在运行中，那么虚拟机就会认为这次自旋也很有可能再次成功，进而允许自旋等待持续相对更长的时间，比如持续100次忙循环。另一方面，如果对于某个锁，自旋很少成功获得过锁，那在以后要获取这个锁时将有可能直接省略掉自旋过程，以避免浪费处理器资源。</li>
+</ul>
+</li>
+<li>锁消除<ul>
+<li>对一些代码要求同步，但是对被检测到不可能存在共享数据竞争的锁进行消除（主要依据逃逸分析的数据支持）</li>
+</ul>
+</li>
+<li>锁粗化<ul>
+<li>如果虚拟机探测到有这样一串零碎的操作都对同一个对象加锁，将会把加锁同步的范围扩展（粗化）到整个操作序列的外部。比如循环方法</li>
+</ul>
+</li>
+<li>轻量级锁（在无竞争的情况下使用CAS操作去消除同步使用的互斥量）<ul>
+<li>能提升程序同步性能的依据是“对于绝大部分的锁，在整个同步周期内都是不存在竞争的”这一经验法则。</li>
+<li>加锁是首先通过CAS操作，CAS操作成功则避免使用互斥量的开销。不成功，则轻量级锁也会膨胀成重量级锁，再加上CAS操作，反而会更慢。</li>
+</ul>
+</li>
+<li>偏向锁（在无竞争的情况下把整个同步都消除掉，连CAS操作都不去做了）<ul>
+<li>参数-XX：-UseBiasedLocking来禁止偏向锁优化</li>
+<li>当锁对象第一次被线程获取的时候，虚拟机将会把对象头中的标志位设置为“01”、把偏向模式设置为“1”，表示进入偏向模式。同时使用CAS操作把获取到这个锁的线程的ID记录在对象的Mark Word之中。如果CAS操作成功，持有偏向锁的线程以后每次进入这个锁相关的同步块时，虚拟机都可以不再进行任何同步操作则一直不需要同步操作（加锁、解锁及对Mark更新等）</li>
+<li>一旦出现另外一个线程去尝试获取这个锁的情况，偏向模式就马上宣告结束。根据锁对象目前是否处于被锁定的状态决定是否撤销偏向（偏向模式设置为“0”），撤销后标志位恢复到未锁定（标志位为“01”）或轻量级锁定（标志位为“00”）的状态，后续的同步操作就按照上面介绍的轻量级锁那样去执行</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        <div class="reward-container">
+  <div>谢谢你请我吃糖!</div>
+  <button onclick="var qr = document.getElementById('qr'); qr.style.display = (qr.style.display === 'none') ? 'block' : 'none';">
+    打赏
+  </button>
+  <div id="qr" style="display: none;">
+      
+      <div style="display: inline-block;">
+        <img src="/images/wechatpay.png" alt="zhhw 微信支付">
+        <p>微信支付</p>
+      </div>
+      
+      <div style="display: inline-block;">
+        <img src="/images/alipay.jpg" alt="zhhw 支付宝">
+        <p>支付宝</p>
+      </div>
+
+  </div>
+</div>
+
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/jvm/" rel="tag"><i class="fa fa-tag"></i> jvm</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/26/%E6%B5%81%E6%B0%B4%E7%BA%BF/" rel="prev" title="流水线">
+      <i class="fa fa-chevron-left"></i> 流水线
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86"><span class="nav-number">2.</span> <span class="nav-text">自动内存管理</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81JVM%E5%86%85%E5%AD%98%E5%8C%BA%E5%9F%9F"><span class="nav-number">2.1.</span> <span class="nav-text">1、JVM内存区域</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E5%AF%B9%E8%B1%A1"><span class="nav-number">2.2.</span> <span class="nav-text">2、对象</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA"><span class="nav-number">2.2.1.</span> <span class="nav-text">创建</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%BC%95%E7%94%A8"><span class="nav-number">2.2.2.</span> <span class="nav-text">引用</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E4%B8%8E%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="nav-number">2.3.</span> <span class="nav-text">3、垃圾收集器与内存分配策略</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%A1%AE%E5%AE%9A%E5%AF%B9%E8%B1%A1%E7%94%9F%E6%AD%BB"><span class="nav-number">2.3.1.</span> <span class="nav-text">确定对象生死</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E7%AE%97%E6%B3%95"><span class="nav-number">2.3.2.</span> <span class="nav-text">垃圾回收算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">2.3.3.</span> <span class="nav-text">垃圾收集器</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%E3%80%81%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%BE%85%E5%8A%A9%E5%B7%A5%E5%85%B7"><span class="nav-number">2.4.</span> <span class="nav-text">4、虚拟机辅助工具</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E8%87%AA%E5%B8%A6%E5%91%BD%E4%BB%A4%E8%A1%8C%E5%B7%A5%E5%85%B7%EF%BC%88%E4%B8%80%E4%BA%9B%E5%9F%BA%E6%9C%AC%E5%B7%A5%E5%85%B7%EF%BC%8C%E5%85%B6%E4%BD%99%E4%BD%BF%E7%94%A8%E8%BF%87%E7%A8%8B%E4%B8%AD%E9%9C%80%E8%A6%81%E5%86%8D%E5%AD%A6%EF%BC%89"><span class="nav-number">2.4.1.</span> <span class="nav-text">Java虚拟机自带命令行工具（一些基本工具，其余使用过程中需要再学）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8F%AF%E8%A7%86%E5%8C%96%E6%95%85%E9%9A%9C%E5%A4%84%E7%90%86%E5%B7%A5%E5%85%B7"><span class="nav-number">2.4.2.</span> <span class="nav-text">可视化故障处理工具</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#HotSpot%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%8F%92%E4%BB%B6"><span class="nav-number">2.4.3.</span> <span class="nav-text">HotSpot虚拟机插件</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5%E3%80%81%E8%B0%83%E4%BC%98%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90%E4%B8%8E%E5%AE%9E%E6%88%98"><span class="nav-number">2.5.</span> <span class="nav-text">5、调优案例分析与实战</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%99%9A%E6%8B%9F%E6%9C%BA%E6%89%A7%E8%A1%8C%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-number">3.</span> <span class="nav-text">虚拟机执行子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%E3%80%81%E7%B1%BB%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84"><span class="nav-number">3.1.</span> <span class="nav-text">1、类文件结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2%E3%80%81%E5%AD%97%E8%8A%82%E7%A0%81%E6%8C%87%E4%BB%A4%E7%AE%80%E4%BB%8B"><span class="nav-number">3.2.</span> <span class="nav-text">2、字节码指令简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3%E3%80%81%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9C%BA%E5%88%B6"><span class="nav-number">3.3.</span> <span class="nav-text">3、类加载机制</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%97%B6%E6%9C%BA"><span class="nav-number">3.3.1.</span> <span class="nav-text">类加载时机</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8"><span class="nav-number">3.3.2.</span> <span class="nav-text">类加载器</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#java%E6%A8%A1%E5%9D%97%E5%8C%96"><span class="nav-number">3.3.3.</span> <span class="nav-text">java模块化</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4%E3%80%81%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%AD%97%E8%8A%82%E7%A0%81%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="nav-number">3.4.</span> <span class="nav-text">4、虚拟机字节码执行引擎</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E8%BF%90%E8%A1%8C%E6%97%B6%E6%A0%88%E5%B8%A7%E7%BB%93%E6%9E%84"><span class="nav-number">3.4.1.</span> <span class="nav-text">运行时栈帧结构</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%96%B9%E6%B3%95%E8%B0%83%E7%94%A8"><span class="nav-number">3.4.2.</span> <span class="nav-text">方法调用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%8A%A8%E6%80%81%E7%B1%BB%E5%9E%8B%E8%AF%AD%E8%A8%80%E6%94%AF%E6%8C%81"><span class="nav-number">3.4.3.</span> <span class="nav-text">动态类型语言支持</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9F%BA%E4%BA%8E%E6%A0%88%E7%9A%84%E5%AD%97%E8%8A%82%E7%A0%81%E8%A7%A3%E9%87%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E"><span class="nav-number">3.4.4.</span> <span class="nav-text">基于栈的字节码解释执行引擎</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%8A%A0%E8%BD%BD%E6%9E%B6%E6%9E%84"><span class="nav-number">3.4.5.</span> <span class="nav-text">类加载架构</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E7%BC%96%E8%AF%91%E4%B8%8E%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96"><span class="nav-number">4.</span> <span class="nav-text">程序编译与代码优化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#JavaC%E7%BC%96%E8%AF%91%E5%99%A8%EF%BC%88%E5%89%8D%E7%AB%AF%E7%BC%96%E8%AF%91%EF%BC%89"><span class="nav-number">4.0.1.</span> <span class="nav-text">JavaC编译器（前端编译）</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%90%8E%E7%AB%AF%E7%BC%96%E8%AF%91%E4%B8%8E%E4%BC%98%E5%8C%96"><span class="nav-number">4.0.2.</span> <span class="nav-text">后端编译与优化</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8D%B3%E6%97%B6%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-number">4.0.2.1.</span> <span class="nav-text">即时编译器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%8F%90%E5%89%8D%E7%BC%96%E8%AF%91%E5%99%A8"><span class="nav-number">4.0.2.2.</span> <span class="nav-text">提前编译器</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E4%BC%98%E5%8C%96"><span class="nav-number">4.0.2.3.</span> <span class="nav-text">编译器优化</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%95%88%E5%B9%B6%E5%8F%91"><span class="nav-number">5.</span> <span class="nav-text">高效并发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Java%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%EF%BC%88%E5%B9%B6%E5%8F%91%EF%BC%89"><span class="nav-number">5.1.</span> <span class="nav-text">Java内存模型（并发）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="nav-number">5.1.1.</span> <span class="nav-text">线程的实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#java%E4%B8%8E%E5%8D%8F%E7%A8%8B"><span class="nav-number">5.1.2.</span> <span class="nav-text">java与协程</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E4%B8%8E%E9%94%81%E4%BC%98%E5%8C%96%EF%BC%88%E9%AB%98%E6%95%88%EF%BC%89"><span class="nav-number">5.2.</span> <span class="nav-text">线程安全与锁优化（高效）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%88%86%E7%B1%BB"><span class="nav-number">5.2.1.</span> <span class="nav-text">线程安全分类</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E5%AE%89%E5%85%A8%E5%AE%9E%E7%8E%B0"><span class="nav-number">5.2.2.</span> <span class="nav-text">线程安全实现</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E9%94%81%E4%BC%98%E5%8C%96"><span class="nav-number">5.2.3.</span> <span class="nav-text">锁优化</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zhhw</p>
+  <div class="site-description" itemprop="description">欢迎联系</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/zhhw137" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;zhhw137" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:13717737201@163.com" title="Mail → mailto:13717737201@163.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2020/8 – 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zhhw</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : true,
+      appId      : 'KgdHuT3kltgIrgNT6o76hovl-gzGzoHsz',
+      appKey     : '6phircWV4C7FajDWFXruKbr9',
+      placeholder: "不说点啥？",
+      avatar     : 'monsterid',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : '' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>
