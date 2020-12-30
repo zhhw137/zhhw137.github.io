@@ -30,7 +30,7 @@
 <meta property="og:description" content="说明《kafka权威指南》的读后总结">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-11-22T13:30:00.000Z">
-<meta property="article:modified_time" content="2020-12-09T05:55:40.265Z">
+<meta property="article:modified_time" content="2020-12-16T08:29:08.411Z">
 <meta property="article:author" content="zhhw">
 <meta property="article:tag" content="Mq">
 <meta name="twitter:card" content="summary">
@@ -228,7 +228,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-12-09 13:55:40" itemprop="dateModified" datetime="2020-12-09T13:55:40+08:00">2020-12-09</time>
+                <time title="修改时间：2020-12-16 16:29:08" itemprop="dateModified" datetime="2020-12-16T16:29:08+08:00">2020-12-16</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -266,13 +266,13 @@
               <span class="post-meta-item-icon">
                 <i class="far fa-file-word"></i>
               </span>
-              <span>17k</span>
+              <span>19k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
-              <span>16 分钟</span>
+              <span>17 分钟</span>
             </span>
 
         </div>
@@ -514,10 +514,50 @@
 </li>
 <li>顺序性：偏移量实现的</li>
 </ul>
-<h3 id="构建数据管道"><a href="#构建数据管道" class="headerlink" title="构建数据管道"></a>构建数据管道</h3><ul>
+<h3 id="构建数据管道（Kafka-Connect）"><a href="#构建数据管道（Kafka-Connect）" class="headerlink" title="构建数据管道（Kafka Connect）"></a>构建数据管道（Kafka Connect）</h3><ul>
 <li>数据管道的需求要求<ul>
-<li>及时性：</li>
-<li>可靠性</li>
+<li>及时性：kafka作为一个基于流的数据平台，提供了可靠且可伸缩的数据存储，可以支持几近实时的数据管道和基于小时的批处理。生产者可以频繁的向kafka写入数据，也可以按需写入；消费者可以在数据到达第一时间读取它们，也可以每隔一段时间读取一次积压的数据。<strong>kafka扮演了一个大型缓冲区的角色，降低了生产者和消费者之间的时间敏感度。</strong></li>
+<li>可靠性: 保证至少一次传递和仅仅一次传递：上面的高可用和新加的幂等producer、事务</li>
+<li>高吞吐量和动态吞吐量：kafka作为缓冲区，将消费者和生产者的吞吐量解耦，且可以通过增加额外的消费者或者生产者实现动态的伸缩，以满足持续的变化的需求。</li>
+<li>数据格式：kafka和Connect API与数据格式无关。生产、消费者可以通过各种序列化器来表示任意格式的数据。而Connect API中有自己的内存对象模型，包括数据类型和schema，也可以使用一些可插拔的转换器，将这些对象保存成任意的格式。</li>
+<li>转换：<ul>
+<li>ETL：提取-转换-加载   由数据管道进行转换再让下游系统加载数据<ul>
+<li>优点：由数据管道进行数据处理，不需要下游系统经过保存数据，修改数据再保存数据这样的过程，节省了时间和存储空间。</li>
+<li>缺点：数据管道有计算和存储负担，对下游系统有限制（当上游系统增加字段时，下游系统接不到，得重新构建管道）</li>
+</ul>
+</li>
+<li>ELT：提取-加载-转换<ul>
+<li>优点：对下游系统没有限制，可以保证与数据源数据一致，做到高保真</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>安全性：kafka支持从数据源到kafka，再从kafka到数据池的加密传输数据；支持认证和授权（SASL实现）。也提供了审计日志用于跟踪访问记录，通过额外的代码编写，跟踪到每个事件的来源和事件的修改者，从而再每个记录之间建立起整体的联系。</li>
+<li>故障处理能力：kafka会长时间保留数据，可以保证在适当的时候回过头来重新处理出错的数据</li>
+<li>耦合性和灵活性</li>
+</ul>
+</li>
+</ul>
+<h3 id="集群镜像"><a href="#集群镜像" class="headerlink" title="集群镜像"></a>集群镜像</h3><ul>
+<li>架构<ul>
+<li>首领与跟随者架构：一个中央数据中心kafka（需要共享其他数据中心数据），镜像其他的本地数据中心kafka（不需要共享数据）。<ul>
+<li>优点：这样可以让只处理单个数据中心数据的应用程序部署本地数据中心里，处理多个数据中心数据的应用程序部署在中央数据中心中。</li>
+<li>缺点是，有些本地数据中心的应用程序偶尔调用其他数据中心程序，会有局限。</li>
+</ul>
+</li>
+<li>双活架构：多个数据中心都需要共享数据，且都可以生成和读取数据。<ul>
+<li>优点：性能优势，不会因为数据可用性出现在功能方面牺牲（去调用中央数据中心而不能就近了）；冗余和弹性，一旦一个数据中心失效，可以重定向到另一个数据中心中。</li>
+<li>缺点：异步更新数据或者从多个数据中心读取数据等问题难以解决</li>
+</ul>
+</li>
+<li>主备架构：解决故障发生时的消费重复和数据丢失情况（确定故障时间，往前点时间作为起始位置；或者外部存储偏移量）</li>
+<li>延展集群：跨多个数据中心安装的奇数个数的单个kafka集群。</li>
+</ul>
+</li>
+<li>MirrorMaker：用于俩个数据中心之间镜像数据<ul>
+<li>包含一组消费者，同属一个群组，并从主题上读取数据，每个MirrorMaker进程都有一个单独的生产者。</li>
+<li>MirrorMaker为每个消费者分配一个线程，消费者从源集群的主题和分区上读取数据，然后通过公共生产者将数据发送到目标集群上</li>
+<li>消费者每60秒通知生产者发送所有的数据到Kafka，并等待Kafka确认。然后再通知源集群提交这些事件的偏移量，先确认数据，再发送偏移量。这样最多重复60秒数据</li>
 </ul>
 </li>
 </ul>
@@ -563,7 +603,10 @@
     <a href="/2020/11/10/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E7%AF%87/" rel="prev" title="设计模式">
       <i class="fa fa-chevron-left"></i> 设计模式
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2020/12/16/%E5%88%86%E5%B8%83%E5%BC%8Fspring-cloud/" rel="next" title="分布式">
+      分布式 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -623,7 +666,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8BKafka"><span class="nav-number">1.1.</span> <span class="nav-text">初始Kafka</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85"><span class="nav-number">1.2.</span> <span class="nav-text">生产者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85"><span class="nav-number">1.3.</span> <span class="nav-text">消费者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B1%E5%85%A5kafka"><span class="nav-number">1.4.</span> <span class="nav-text">深入kafka</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E9%9D%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BC%A0%E9%80%92"><span class="nav-number">1.5.</span> <span class="nav-text">可靠的数据传递</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E6%95%B0%E6%8D%AE%E7%AE%A1%E9%81%93"><span class="nav-number">1.6.</span> <span class="nav-text">构建数据管道</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%AF%B4%E6%98%8E"><span class="nav-number">1.</span> <span class="nav-text">说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8BKafka"><span class="nav-number">1.1.</span> <span class="nav-text">初始Kafka</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%94%9F%E4%BA%A7%E8%80%85"><span class="nav-number">1.2.</span> <span class="nav-text">生产者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85"><span class="nav-number">1.3.</span> <span class="nav-text">消费者</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B7%B1%E5%85%A5kafka"><span class="nav-number">1.4.</span> <span class="nav-text">深入kafka</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E9%9D%A0%E7%9A%84%E6%95%B0%E6%8D%AE%E4%BC%A0%E9%80%92"><span class="nav-number">1.5.</span> <span class="nav-text">可靠的数据传递</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E5%BB%BA%E6%95%B0%E6%8D%AE%E7%AE%A1%E9%81%93%EF%BC%88Kafka-Connect%EF%BC%89"><span class="nav-number">1.6.</span> <span class="nav-text">构建数据管道（Kafka Connect）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E9%95%9C%E5%83%8F"><span class="nav-number">1.7.</span> <span class="nav-text">集群镜像</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -637,20 +680,20 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-count">9</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-categories">
             <a href="/categories/">
           
-        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-count">8</span>
         <span class="site-state-item-name">分类</span></a>
       </div>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">11</span>
+        <span class="site-state-item-count">13</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -694,12 +737,12 @@
     <span class="post-meta-item-icon">
       <i class="fa fa-chart-area"></i>
     </span>
-    <span title="站点总字数">182k</span>
+    <span title="站点总字数">192k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
-    <span title="站点阅读时长">2:45</span>
+    <span title="站点阅读时长">2:55</span>
 </div>
   <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
   </div>
